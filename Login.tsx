@@ -12,6 +12,7 @@ import {
   UIManager,
   Image,
   Animated,
+  TouchableOpacity,
 } from 'react-native';
 import MaskedView from '@react-native-masked-view/masked-view';
 import LinearGradient from 'react-native-linear-gradient';
@@ -50,6 +51,7 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
     Animated.timing(SignBtnScreenTxtOpacity, {
       toValue: 1,
       useNativeDriver: true,
+      duration:400
     }).start();
 
   }, [confirmPassword]);
@@ -146,6 +148,7 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
           </Animated.Text>
         </View>
         <View style={[login.view_6]}>
+          <Animated.View style={{width:"100%",position:"absolute",height:windowHeight*0.2,backgroundColor:"white",top:0,zIndex:SignBtnScreenTxtOpacity.interpolate({inputRange:[0,1],outputRange:[999,-1]}),opacity:SignBtnScreenTxtOpacity.interpolate({inputRange:[0,1],outputRange:[1,0]})}}></Animated.View>
           <Animated.View style={[login.Option]}>
             <LinearGradient
               start={{x: 0, y: 0}}
@@ -313,7 +316,7 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
                       setPassword(password.trim());
                       setCP(cp.trim());
                         LayoutAnimation.configureNext({
-                          duration: 300,
+                          duration: 100,
                           create: {type: 'linear', property: 'scaleY'},
                           update: {type: 'linear', property: 'scaleY'},
                           delete: {type: 'linear', property: 'scaleY'},
@@ -358,6 +361,8 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
                   }
                 }
               }}>
+                <TouchableOpacity>
+                  
               <Animated.Text
                 style={{
                   color: 'white',
@@ -366,6 +371,7 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
                 }}>
                 {confirmPassword.toggle ? 'Login In' : 'Sign Up'}
               </Animated.Text>
+                </TouchableOpacity>
             </Button>
           </LinearGradient>
         </View>
@@ -376,7 +382,7 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
               style={[{color: '#8A6EE5'}, {opacity: SignBtnScreenTxtOpacity}]}
               onPress={() => {
                 LayoutAnimation.configureNext({
-                  duration: 300,
+                  duration: 100,
                   create: {type: 'linear', property: 'scaleY'},
                   update: {type: 'linear', property: 'scaleY'},
                   delete: {type: 'linear', property: 'scaleY'},
@@ -439,11 +445,11 @@ const login = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   view_2: {
-    flexGrow: 1,
+    flexGrow: 0.5,
     justifyContent: 'center',
   },
   view_3: {
-    flexGrow: 1,
+    flexGrow: 0.5,
     justifyContent: 'center',
   },
   view_4: {
@@ -463,6 +469,7 @@ const login = StyleSheet.create({
     flexGrow: 7,
     justifyContent: 'center',
     padding: 15,
+    overflow:"visible"
   },
   view_7: {
     flexGrow: 2,
@@ -470,7 +477,7 @@ const login = StyleSheet.create({
     alignItems: 'center',
   },
   view_8: {
-    flexGrow: 4,
+    flexGrow:1
   },
   WelcomeTxt: {
     paddingLeft: 30,

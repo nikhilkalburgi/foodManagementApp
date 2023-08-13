@@ -11,6 +11,10 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import NotificationScreen from './Notification';
 import DonationScreen from './Donation';
 import SearchScreen from './Search';
+import DonorNGOVolunteer from './Requests';
+import DonationDetails from './DonationDetails';
+import RequestDonor from './RequestDonor'
+import VolunteerNGO from './VolunteerNGO';
 
 const Stack = createNativeStackNavigator();
 
@@ -27,6 +31,10 @@ function AppStack() {
       <Stack.Screen name="Search" component={SearchScreen} />
       <Stack.Screen name="Notification" component={NotificationScreen} />
       <Stack.Screen name="Donation" component={DonationScreen} />
+      <Stack.Screen name="DonorNGOVolunteer" component={DonorNGOVolunteer} />
+      <Stack.Screen name="DonationDetails" component={DonationDetails} />
+      <Stack.Screen name="RequestDonor" component={RequestDonor} />
+      <Stack.Screen name="VolunteerNGO" component={VolunteerNGO} />
     </Stack.Navigator>
   );
 }
@@ -36,7 +44,7 @@ export default () => (
     <StatusBar
         animated={true}
         backgroundColor="transparent"
-        translucent={true}
+        translucent={false}
       />
     <NavigationContainer>
     <AppStack/>

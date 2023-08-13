@@ -38,15 +38,15 @@ export default function ProfileScreen({navigation,route}: {navigation: any,route
                 <View style={profile.view_4}>
                 <Input
       label='Default Location'
-      placeholder='Place your Text'
+      placeholder='Your Loction' disabled={true}
     />
     <Input
       label='Mobile'
-      placeholder='Place your Text'
+      placeholder='Your Mobile Number' disabled={true}
     />
     <Input
       label='Passward'
-      placeholder='Place your Text'
+      placeholder='Your Password' disabled={true}
     />
                 </View>
                 <View style={profile.view_5}>
@@ -64,11 +64,11 @@ export default function ProfileScreen({navigation,route}: {navigation: any,route
               shadowOpacity: 1,
               backgroundColor: 'white',
             }}>
-            <Button style={{backgroundColor:"transparent",borderWidth:0}}>
-              <Animated.Text>
+            <TouchableOpacity style={{backgroundColor:"transparent",borderWidth:0,paddingVertical:15}}>
+              <Animated.Text style={{color:"white",textAlign:"center",fontWeight:"bold"}}>
                 Logout
               </Animated.Text>
-            </Button>
+            </TouchableOpacity>
           </LinearGradient>
           <LinearGradient
             start={{x: 0, y: 0}}
@@ -85,11 +85,11 @@ export default function ProfileScreen({navigation,route}: {navigation: any,route
               backgroundColor: 'white',
               marginTop:20
             }}>
-            <Button style={{backgroundColor:"transparent",borderWidth:0}}> 
-              <Animated.Text>
+            <TouchableOpacity style={{backgroundColor:"transparent",borderWidth:0,paddingVertical:15}}>
+              <Animated.Text style={{color:"white",textAlign:"center",fontWeight:"bold"}}>
                 Delete Account
               </Animated.Text>
-            </Button>
+            </TouchableOpacity>
           </LinearGradient>
                 </View>
             </View>

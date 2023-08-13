@@ -12,7 +12,7 @@ const windowWidth = Dimensions.get('window').width;
 const LinearColor:string[] = ["#FF07E6","#13D7E3"]
 
 export default function HomeScreen({navigation,route}: {navigation: any,route:any}) {
-  const selectedIndex = React.useRef(new Animated.Value(10)).current;;
+  const selectedIndex = React.useRef(new Animated.Value(0)).current;
 
   const [items, setItems] = React.useState([{id:1,name:""}]);
   const [userType,setUserType] = React.useState("")
@@ -25,27 +25,27 @@ export default function HomeScreen({navigation,route}: {navigation: any,route:an
 
     if(route.params.place.donor){
       setUserType("Donor")
-      setItems( [{id:1,name:"ngo"},{id:2,name:"fb"}] )
+      setItems( [{id:1,name:"Donations"},{id:2,name:"NGO"}] )
       setTab({topBar:
         <View style={home.TopBar}>
         <View style={home.TopBar_v1}>
-          <View >
-            <Text style={{color:"black"}} onPress={()=>{
+          <View style={{justifyContent:"center",alignItems:"center"}}>
+            <Text style={{color:"black",textAlign:"center"}} onPress={()=>{
             Flatlist.current?.scrollToIndex({
               animated:true,
               index:0
             })
             console.log("TT",selectedIndex)
-          }}>NGO</Text>
+          }}>My Donations</Text>
           </View>
           <View >
-            <Text style={{color:"black"}} onPress={()=>{
+            <Text style={{color:"black",textAlign:"center"}} onPress={()=>{
             Flatlist.current?.scrollToIndex({
               animated:true,
               index:1
             })
             console.log(selectedIndex)
-          }}>Food Bank</Text>
+          }}>NGO</Text>
           </View>
         </View>
           <View style={home.TopBar_v2}>
@@ -69,7 +69,7 @@ export default function HomeScreen({navigation,route}: {navigation: any,route:an
                 <Text>Volunteer</Text>
               </TouchableOpacity>
               <View style={{paddingHorizontal:30}}></View>
-              <TouchableOpacity style={{justifyContent:"center",alignItems:"center",paddingVertical:2}}>
+              <TouchableOpacity style={{justifyContent:"center",alignItems:"center",paddingVertical:2}} onPress={()=>{navigation.navigate("DonorNGOVolunteer",{userType:userType})}}>
                 <Image source={require("./assets/ngo.png")}/>
                 <Text>NGO</Text>
               </TouchableOpacity>
@@ -91,11 +91,8 @@ export default function HomeScreen({navigation,route}: {navigation: any,route:an
         shadowRadius: 5,
       }}>
                 <TouchableOpacity style={home.BottomBar_Circle_v1} onPress={()=>{navigation.navigate("Donation")}}> 
-                <MaskedView maskElement={<Text style={home.plus}>+</Text>}>
-        <LinearGradient start={{x: 0, y: 0}} end={{x: 1, y: 0}} colors={LinearColor}>
-          <Text style={{textAlign: 'center',fontSize: 60,fontWeight: 'bold',opacity:0}}>+</Text>
-        </LinearGradient>
-        </MaskedView>
+               
+          <Text style={{textAlign: 'center',fontSize: 60,fontWeight: 'bold',opacity:1,width:"100%",lineHeight:70,verticalAlign:"middle",color:"black"}}>+</Text>
                 </TouchableOpacity>
             </DropShadow>
             <View style={home.BottomBar_Circle_v2}></View>
@@ -104,12 +101,12 @@ export default function HomeScreen({navigation,route}: {navigation: any,route:an
     })
     }else if(route.params.place.ngo){
       setUserType("NGO")
-      setItems( [{id:1,name:"donation"},{id:2,name:"volunteer"},{id:3,name:"ngo"},{id:4,name:"fb"}] )
+      setItems( [{id:1,name:"Donations"},{id:2,name:"Donors"}] )
       setTab({topBar:
         <View style={home.TopBar}>
         <View style={home.TopBar_v1}>
-          <View>
-            <Text style={{color:"black"}} onPress={()=>{
+          <View style={{justifyContent:"center",alignItems:"center"}}>
+            <Text style={{color:"black",textAlign:"center"}} onPress={()=>{
             Flatlist.current?.scrollToIndex({
               animated:true,
               index:0
@@ -118,10 +115,10 @@ export default function HomeScreen({navigation,route}: {navigation: any,route:an
           }}>Donations</Text>
           </View>
           <View>
-            <Text style={{color:"black"}} onPress={()=>{
+            <Text style={{color:"black",textAlign:"center"}} onPress={()=>{
             Flatlist.current?.scrollToIndex({
               animated:true,
-              index:0
+              index:1
             })
             console.log("TT",selectedIndex)
           }}>Donors</Text>
@@ -137,17 +134,17 @@ export default function HomeScreen({navigation,route}: {navigation: any,route:an
       shadowOffset:{width:0,height:-5},
       shadowOpacity:0.6,
       shadowRadius:6}}>
-    <View style={home.BottomBar_v1}>
+    <View style={{...home.BottomBar_v1,padding:10}}>
 
-              <TouchableOpacity style={{justifyContent:"center",alignItems:"center",paddingVertical:2}}>
+              <TouchableOpacity style={{justifyContent:"center",alignItems:"center",paddingVertical:2}} onPress={()=>{navigation.navigate("DonorNGOVolunteer",{userType:userType})}}>
                 <Image source={require("./assets/request.png")}/>
                 <Text>Requests</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={{justifyContent:"center",alignItems:"center",paddingVertical:2}}>
+              <TouchableOpacity style={{justifyContent:"center",alignItems:"center",paddingVertical:2}} onPress={()=>{navigation.navigate("VolunteerNGO",{userType:userType})}}>
                 <Image source={require("./assets/volunteer.png")}/>
                 <Text>Volunteer</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={{justifyContent:"center",alignItems:"center",paddingVertical:2}}>
+              <TouchableOpacity style={{justifyContent:"center",alignItems:"center",paddingVertical:2}} onPress={()=>{navigation.navigate("Profile")}}>
                 <Image source={require("./assets/ngo.png")}/>
                 <Text>Profile</Text>
               </TouchableOpacity>
@@ -158,12 +155,12 @@ export default function HomeScreen({navigation,route}: {navigation: any,route:an
     })
     }else if(route.params.place.volunteer){
       setUserType("Volunteer")
-      setItems( [{id:1,name:"donation"},{id:2,name:"volunteer"},{id:3,name:"ngo"},{id:4,name:"fb"}] )
+      setItems( [{id:1,name:"NGO"},{id:2,name:"Donors"}] )
       setTab({topBar:
         <View style={home.TopBar}>
         <View style={home.TopBar_v1}>
           <View >
-            <Text style={{color:"black"}} onPress={()=>{
+            <Text style={{color:"black",textAlign:"center"}} onPress={()=>{
             Flatlist.current?.scrollToIndex({
               animated:true,
               index:0
@@ -172,7 +169,7 @@ export default function HomeScreen({navigation,route}: {navigation: any,route:an
           }}>NGO</Text>
           </View>
           <View >
-            <Text style={{color:"black"}} onPress={()=>{
+            <Text style={{color:"black",textAlign:"center"}} onPress={()=>{
             Flatlist.current?.scrollToIndex({
               animated:true,
               index:1
@@ -191,17 +188,17 @@ export default function HomeScreen({navigation,route}: {navigation: any,route:an
       shadowOffset:{width:0,height:-5},
       shadowOpacity:0.6,
       shadowRadius:6}}>
-    <View style={home.BottomBar_v1}>
+    <View style={{...home.BottomBar_v1,padding:10}}>
 
-              <TouchableOpacity style={{justifyContent:"center",alignItems:"center",paddingVertical:2}}>
+              <TouchableOpacity style={{justifyContent:"center",alignItems:"center",paddingVertical:2}} onPress={()=>{navigation.navigate("DonorNGOVolunteer",{userType:userType})}}>
                 <Image source={require("./assets/request.png")}/>
                 <Text>Requests</Text>
               </TouchableOpacity>
               <TouchableOpacity style={{justifyContent:"center",alignItems:"center",paddingVertical:2}}>
-                <Image source={require("./assets/map.png")}/>
+                <Image source={require("./assets/map.png")} style={{height:30,resizeMode:"contain"}}/>
                 <Text>Map</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={{justifyContent:"center",alignItems:"center",paddingVertical:2}}>
+              <TouchableOpacity style={{justifyContent:"center",alignItems:"center",paddingVertical:2}} onPress={()=>{navigation.navigate("Profile")}}>
                 <Image source={require("./assets/ngo.png")}/>
                 <Text>Profile</Text>
               </TouchableOpacity>
@@ -211,10 +208,8 @@ export default function HomeScreen({navigation,route}: {navigation: any,route:an
      </>     
     })
     }
-  },[selectedIndex])
-
+  },[userType])
   
-
     return (
       <View style={home.ParentView}>
         <View style={home.view_1}>
@@ -237,7 +232,7 @@ export default function HomeScreen({navigation,route}: {navigation: any,route:an
         <View style={home.view_4}>
         <FlatList
                 data={items}
-                renderItem={({ item }) => <Slide slideName={item.name} />}
+                renderItem={({ item }) => <Slide slideName={item.name} navigation={navigation} userType={userType}/>}
                 keyExtractor={(item) => String(item.id)}
                 snapToAlignment="start"
                 decelerationRate={"fast"}
@@ -299,7 +294,7 @@ export default function HomeScreen({navigation,route}: {navigation: any,route:an
       color:"black"
     },
     TopBar : {
-      height:40,
+      margin:5,
     },
     TopBar_v1:{
       flexGrow: 4,
@@ -307,18 +302,19 @@ export default function HomeScreen({navigation,route}: {navigation: any,route:an
       justifyContent:"space-around",
       alignItems:"center",
       borderBottomWidth:StyleSheet.hairlineWidth,
-      borderColor:"#ddd"
+      borderColor:"#ddd",
+      paddingBottom:5
     },
     TopBar_v2:{
       flexGrow:0.4,
-      width:"95%",
+      width:"90%",
       alignSelf:"center",
-    },
-    TopBar_Slider:{
-      width:"28%",
-      backgroundColor:"blue",
-      flex:1,
       position:"relative",
+      left:"50%",
+      transform:[{translateX:-windowWidth*0.49,}],
+      borderWidth:StyleSheet.hairlineWidth,
+      borderRadius:100,
+      overflow:"hidden"
     },
     BottomBar_Circle:{
       position:"absolute",
@@ -345,18 +341,21 @@ export default function HomeScreen({navigation,route}: {navigation: any,route:an
       aspectRatio:1,
       backgroundColor:"white",
       justifyContent:"center",
-      alignItems:"center"
+      alignItems:"center",
+      marginTop:6
     },
     BottomBar_Circle_v2:{
       position:"absolute",
       width:"120%",
       aspectRatio:1/0.5,
-      margin:0,
-      bottom:-6.9,
+      margin:-3,
+      bottom:-8,
       zIndex:-1,
       backgroundColor:"#F8F9F9",
       borderBottomEndRadius:100,
       borderBottomStartRadius:100,
+      alignItems:"center",
+      justifyContent:"center"
          },
   plus: {
     textAlign: 'center',
