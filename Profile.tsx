@@ -12,6 +12,8 @@ const windowWidth = Dimensions.get('window').width;
 const LinearColor:string[] = ["#FF07E6","#13D7E3"]
 
 export default function ProfileScreen({navigation,route}: {navigation: any,route:any}) {
+
+
     return (
         <ScrollView style={profile.ScrollView}>
             <View style={profile.ParentView}>
@@ -20,7 +22,7 @@ export default function ProfileScreen({navigation,route}: {navigation: any,route
                 <Image source={require("./assets/arrow.png")} style={{width:30,height:30,objectFit:"contain"}}/>
         </TouchableOpacity>
 
-        <TouchableOpacity style={{justifyContent:"center",alignItems:"flex-end",paddingVertical:2,paddingHorizontal:20}} onPress={()=>{navigation.navigate("EditProfile")}}>
+        <TouchableOpacity style={{justifyContent:"center",alignItems:"flex-end",paddingVertical:2,paddingHorizontal:20}} onPress={()=>{navigation.navigate("EditProfile",{username:route.params.username,password:route.params.password,userType:route.params.userType,mobile:route.params.mobile,defaultLocation:route.params.defaultLocation})}}>
                 <Image source={require("./assets/edit.png")} style={{width:30,height:30,objectFit:"contain"}}/>
         </TouchableOpacity>
                 </View>
@@ -28,24 +30,24 @@ export default function ProfileScreen({navigation,route}: {navigation: any,route
                     <View style={profile.ProfileImage}></View>
                 </View>
                 <View style={profile.view_3}>
-                    <View>
-                        <Text style={{fontSize:25,color:"black",fontWeight:"bold"}}>Name</Text>
+                    <View >
+                        <Text style={{fontSize:25,color:"black",fontWeight:"bold",textAlign:"center"}} numberOfLines={1}>{route.params.username}</Text>
                     </View>
                     <View>
-                        <Text>Role</Text>
+                        <Text style={{textAlign:"center"}} numberOfLines={1}>{route.params.userType} </Text>
                     </View>
                 </View>
                 <View style={profile.view_4}>
                 <Input
-      label='Default Location'
+      label='Default Location' value={String(route.params.defaultLocation)}
       placeholder='Your Loction' disabled={true}
     />
     <Input
-      label='Mobile'
+      label='Mobile' value={String(route.params.mobile)}
       placeholder='Your Mobile Number' disabled={true}
     />
     <Input
-      label='Passward'
+      label='Passward' value= {String(route.params.password)}
       placeholder='Your Password' disabled={true}
     />
                 </View>
@@ -113,7 +115,7 @@ const profile = StyleSheet.create({
     view_2: {
       justifyContent: 'center',
       alignItems:"center",
-      paddingVertical:30
+      paddingVertical:30,
     },
     view_3: {
       justifyContent: 'center',

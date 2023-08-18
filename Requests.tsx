@@ -22,10 +22,10 @@ export default function DonorNGOVolunteer({navigation,route}: {navigation: any,r
         <ScrollView style={donorngo.ScrollView}>
             <View style={donorngo.ParentView}>
                 <View style={donorngo.view_1}>
-                <TouchableOpacity style={{justifyContent:"center",paddingVertical:2,flexGrow:4,paddingHorizontal:20}} onPress={()=>{navigation.navigate("Home")}}>
+                <TouchableOpacity style={{paddingVertical:2,width:"10%",paddingHorizontal:20}} onPress={()=>{navigation.navigate("Home")}}>
                 <Image source={require("./assets/arrow.png")} style={{width:30,height:30,objectFit:"contain"}}/>
         </TouchableOpacity>
-        <Text style={{position:"absolute",left:"55%",transform:[{translateX:-windowWidth*0.1,}],fontSize:25,color:"black"}}>
+        <Text style={{marginLeft:"10%",fontSize:25,color:"black",width:"70%"}}>
                 {route.params.userType}
         </Text>
                 </View>
@@ -110,7 +110,6 @@ const donorngo = StyleSheet.create({
       height: windowHeight,
     },
     view_1: {
-      justifyContent: 'flex-end',
       flexDirection:"row",
       marginTop:20
     },

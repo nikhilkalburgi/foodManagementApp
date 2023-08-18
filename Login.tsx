@@ -16,10 +16,14 @@ import {
 } from 'react-native';
 import MaskedView from '@react-native-masked-view/masked-view';
 import LinearGradient from 'react-native-linear-gradient';
+import {firebase} from './android/app/src/firebase/config.js';
+import database from '@react-native-firebase/database';
+import EncryptedStorage from 'react-native-encrypted-storage';
 
 const windowHeight = Dimensions.get('window').height;
 const windowWidth = Dimensions.get('window').width;
 const LinearColor: string[] = ['#FF07E6', '#8A6EE5', '#13D7E3'];
+let currentRole:string = "";
 
 if (
   Platform.OS === 'android' &&
@@ -28,6 +32,20 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
+async function storeUserSession(username:string,place:any) {
+  try {
+      await EncryptedStorage.setItem(
+          "user_session",
+          JSON.stringify({
+              username,place
+          })
+      );
+
+      // Congrats! You've just stored your first value!
+  } catch (error) {
+      // There was an error on the native side
+  }
+}
 
 const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
   let [confirmPassword, setConfirmPassword] = useState({
@@ -44,16 +62,15 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
   });
 
   const SignBtnScreenTxtOpacity = React.useRef(new Animated.Value(1)).current;
-  const [SignBtnScreenRoleShape,setSignBtnScreenRoleShape] = React.useState(100);
+  const [loginBtnDisable, setLoginBtndisable] = React.useState(false);
 
   React.useEffect(() => {
     SignBtnScreenTxtOpacity.setValue(0);
     Animated.timing(SignBtnScreenTxtOpacity, {
       toValue: 1,
       useNativeDriver: true,
-      duration:400
+      duration: 400,
     }).start();
-
   }, [confirmPassword]);
 
   return (
@@ -148,7 +165,22 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
           </Animated.Text>
         </View>
         <View style={[login.view_6]}>
-          <Animated.View style={{width:"100%",position:"absolute",height:windowHeight*0.2,backgroundColor:"white",top:0,zIndex:SignBtnScreenTxtOpacity.interpolate({inputRange:[0,1],outputRange:[999,-1]}),opacity:SignBtnScreenTxtOpacity.interpolate({inputRange:[0,1],outputRange:[1,0]})}}></Animated.View>
+          <Animated.View
+            style={{
+              width: '100%',
+              position: 'absolute',
+              height: windowHeight * 0.2,
+              backgroundColor: 'white',
+              top: 0,
+              zIndex: SignBtnScreenTxtOpacity.interpolate({
+                inputRange: [0, 1],
+                outputRange: [999, -1],
+              }),
+              opacity: SignBtnScreenTxtOpacity.interpolate({
+                inputRange: [0, 1],
+                outputRange: [1, 0],
+              }),
+            }}></Animated.View>
           <Animated.View style={[login.Option]}>
             <LinearGradient
               start={{x: 0, y: 0}}
@@ -161,7 +193,8 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
               <View
                 style={{
                   ...login.OptionIcon,
-                  borderRadius: confirmPassword.toggle ? 100 : 5,borderWidth:1
+                  borderRadius: confirmPassword.toggle ? 100 : 5,
+                  borderWidth: 1,
                 }}
                 onTouchStart={() => {
                   if (confirmPassword.toggle) {
@@ -181,7 +214,7 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
                 <Image
                   source={require('./assets/donor.png')}
                   style={{width: '70%'}}
-                  resizeMode='contain'
+                  resizeMode="contain"
                 />
               </View>
             </LinearGradient>
@@ -200,7 +233,8 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
               <View
                 style={{
                   ...login.OptionIcon,
-                  borderRadius: confirmPassword.toggle ? 100 : 5,borderWidth:1
+                  borderRadius: confirmPassword.toggle ? 100 : 5,
+                  borderWidth: 1,
                 }}
                 onTouchStart={() => {
                   if (confirmPassword.toggle) {
@@ -220,7 +254,7 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
                 <Image
                   source={require('./assets/volunteer.png')}
                   style={{width: '70%'}}
-                  resizeMode='contain'
+                  resizeMode="contain"
                 />
               </View>
             </LinearGradient>
@@ -239,7 +273,8 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
               <View
                 style={{
                   ...login.OptionIcon,
-                  borderRadius: confirmPassword.toggle ? 100 : 5,borderWidth:1
+                  borderRadius: confirmPassword.toggle ? 100 : 5,
+                  borderWidth: 1,
                 }}
                 onTouchStart={() => {
                   if (confirmPassword.toggle) {
@@ -259,13 +294,12 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
                 <Image
                   source={require('./assets/ngo.png')}
                   style={{width: '70%'}}
-                  resizeMode='contain'
+                  resizeMode="contain"
                 />
               </View>
             </LinearGradient>
             <Text style={login.OptionTxt}>NGO</Text>
           </View>
-
         </View>
         <View style={login.view_7}>
           <LinearGradient
@@ -282,87 +316,196 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
               shadowOpacity: 1,
               backgroundColor: 'white',
             }}>
-            <Button
+            <Button  disabled={loginBtnDisable}
               style={login.LoginBtn}
               size="giant"
               onPress={() => {
-                if (confirmPassword.toggle) {
-                  if (username && password && (place.donor || place.ngo || place.volunteer)) {
+
+                try{
+
+                  setLoginBtndisable(true)
+                  if (confirmPassword.toggle) {
                     if (
-                      !(
-                        username.trim().match(/[^a-zA-Z0-9\s]/g) ||
-                        password.trim().match(/[^a-zA-Z0-9@#\s]/g)
-                      )
+                      username &&
+                      password &&
+                      (place.donor || place.ngo || place.volunteer)
                     ) {
-                      setUsername(username.trim());
-                      setPassword(password.trim());
-                      navigation.navigate('Home', {place: place});
-                    }
-                  }
-                } else {
-                  if (username && password && cp) {
-                    if (
-                      !(
-                        username.trim().match(/[^a-zA-Z0-9\s]/g) ||
-                        password
-                          .trim()
-                          .match(
-                            /[^a-zA-Z0-9@#\s]/g ||
-                              cp.trim().match(/[^a-zA-Z0-9@#\s]/g),
-                          )
-                      )
-                    ) {
-                      setUsername(username.trim());
-                      setPassword(password.trim());
-                      setCP(cp.trim());
-                        LayoutAnimation.configureNext({
-                          duration: 100,
-                          create: {type: 'linear', property: 'scaleY'},
-                          update: {type: 'linear', property: 'scaleY'},
-                          delete: {type: 'linear', property: 'scaleY'},
-                        });
-                        if (confirmPassword.toggle) {
-                          setConfirmPassword({
-                            toggle: false,
-                            element: (
-                              <LinearGradient
-                                start={{x: 0, y: 0}}
-                                end={{x: 1, y: 0}}
-                                colors={LinearColor}
-                                style={{
-                                  padding: 2,
-                                  width: '95%',
-                                  borderRadius: 5,
-                                  zIndex: 999,
-                                  elevation: 5,
-                                  shadowColor: 'black',
-                                  shadowOffset: {width: 20, height: 20},
-                                  shadowOpacity: 1,
-                                  backgroundColor: 'white',
-                                }}>
-                                <TextInput
-                                  onChangeText={value => setCP(value)}
-                                  inlineImageLeft="password"
-                                  inlineImagePadding={50}
-                                  style={login.Input}
-                                  placeholder=" Confirm Password"
-                                />
-                              </LinearGradient>
-                            ),
-                          });
-                        } else {
-                          setConfirmPassword({
-                            toggle: true,
-                            element: <Text style={{height: 0}}></Text>,
-                          });
+                      if (
+                        !(
+                          username.trim().match(/[^a-zA-Z0-9\s]/g) ||
+                          password.match(/[^a-zA-Z0-9@#\s]/g)
+                        )
+                      ) {
+                        
+                        setUsername(username.trim());
+                        if(place.donor){
+                          currentRole = "D"
+                        }else if(place.ngo){
+                          currentRole = "N"
+                        }else{
+                          currentRole = "V"
                         }
-                    
+                        database()
+                          .ref(`/users/${username.trim()}`)
+                          .once('value')
+                          .then(snapshot => {
+                            let user = snapshot.val()
+                            if (user && user.password == password && (user.role.split("")).indexOf(currentRole) > -1) {
+                              setLoginBtndisable(false)
+                              storeUserSession(username.trim(),place)
+                              navigation.navigate('Home', {
+                                place,
+                                username,
+                                password,
+                                user
+                              });
+                            } else {
+                              setLoginBtndisable(false)
+                              if(user.password == password){
+                                console.error('Invalid Password');
+                              }else if((user.role.split("")).indexOf(currentRole) == -1){
+                                console.error('Invalid role');
+                              }else{
+                                console.error('Please Sign Up');
+  
+                              }
+                            }
+                          });
+                      }else{
+                        console.error("Invalid Input")
+                        setLoginBtndisable(false)
+                      }
+                    }else{
+                      console.error("Incomplete Input")
+                      setLoginBtndisable(false)
                     }
+                  } else {
+                    if (
+                      username &&
+                      password &&
+                      cp &&
+                      (place.donor || place.ngo || place.volunteer)
+                    ) {
+                      if (
+                        !(
+                          username.trim().match(/[^a-zA-Z0-9\s]/g) ||
+                          password
+                            .match(
+                              /[^a-zA-Z0-9@#\s]/g ||
+                                cp.trim().match(/[^a-zA-Z0-9@#\s]/g),
+                            )
+                        )
+                      ) {
+                        setUsername(username.trim());
+                        currentRole = ""
+                        if (password == cp) {
+                          if(place.donor){
+                            currentRole += 'D'
+                          }
+                          if(place.ngo){
+                            currentRole += "N"
+                          }
+                          if(place.volunteer){
+                            currentRole += "V"
+                          }
+                          
+                          database()
+                            .ref(`/users/${username}`)
+                            .once('value')
+                            .then(snapshot => {
+                              if (!snapshot.val()) {
+                                database()
+                                  .ref(`/users/${username.trim()}`)
+                                  .set({
+                                    name: username.trim(),
+                                    password: password,
+                                    role:currentRole,
+                                    mobile:"",
+                                    location:"",
+                                    authenticated:false
+                                  })
+                                  .then(() => {
+                                    LayoutAnimation.configureNext({
+                                      duration: 100,
+                                      create: {
+                                        type: 'linear',
+                                        property: 'scaleY',
+                                      },
+                                      update: {
+                                        type: 'linear',
+                                        property: 'scaleY',
+                                      },
+                                      delete: {
+                                        type: 'linear',
+                                        property: 'scaleY',
+                                      },
+                                    });
+                                    if (confirmPassword.toggle) {
+                                      setConfirmPassword({
+                                        toggle: false,
+                                        element: (
+                                          <LinearGradient
+                                          start={{x: 0, y: 0}}
+                                          end={{x: 1, y: 0}}
+                                          colors={LinearColor}
+                                            style={{
+                                              padding: 2,
+                                              width: '95%',
+                                              borderRadius: 5,
+                                              zIndex: 999,
+                                              elevation: 5,
+                                              shadowColor: 'black',
+                                              shadowOffset: {
+                                                width: 20,
+                                                height: 20,
+                                              },
+                                              shadowOpacity: 1,
+                                              backgroundColor: 'white',
+                                            }}>
+                                            <TextInput
+                                              onChangeText={value => setCP(value)}
+                                              inlineImageLeft="password"
+                                              inlineImagePadding={50}
+                                              style={login.Input}
+                                              placeholder=" Confirm Password"
+                                              />
+                                          </LinearGradient>
+                                        ),
+                                      });
+                                    } else {
+                                      setPlace({donor:false,volunteer:false,ngo:false})
+                                      setConfirmPassword({
+                                        toggle: true,
+                                        element: (
+                                          <Text style={{height: 0}}></Text>
+                                          ),
+                                        });
+                                      }
+                                      setLoginBtndisable(false)
+                                  });
+                              } else {
+                                console.error('Username Exists');
+                                setLoginBtndisable(false)
+                              }
+                            });
+                        } else {
+                          console.error('password != cp');
+                          setLoginBtndisable(false)
+                        }
+                      }else{
+                        console.error("Invalid Input")
+                        setLoginBtndisable(false)
+                      }
+                    }else{
+                      console.error("Incomplete Input")
+                        setLoginBtndisable(false)
+                    }
+                    
                   }
+                } catch{
+                  console.error("Unexpected Error Occured!")
                 }
               }}>
-                <TouchableOpacity>
-                  
               <Animated.Text
                 style={{
                   color: 'white',
@@ -371,7 +514,6 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
                 }}>
                 {confirmPassword.toggle ? 'Login In' : 'Sign Up'}
               </Animated.Text>
-                </TouchableOpacity>
             </Button>
           </LinearGradient>
         </View>
@@ -392,13 +534,13 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
                     toggle: false,
                     element: (
                       <LinearGradient
-                        start={{x: 0, y: 0}}
-                        end={{x: 1, y: 0}}
-                        colors={LinearColor}
-                        style={{
-                          padding: 2,
-                          width: '95%',
-                          borderRadius: 5,
+                      start={{x: 0, y: 0}}
+                      end={{x: 1, y: 0}}
+                      colors={LinearColor}
+                      style={{
+                        padding: 2,
+                        width: '95%',
+                        borderRadius: 5,
                           zIndex: 999,
                           elevation: 5,
                           shadowColor: 'black',
@@ -412,11 +554,12 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
                           inlineImagePadding={50}
                           style={login.Input}
                           placeholder=" Confirm Password"
-                        />
+                          />
                       </LinearGradient>
                     ),
                   });
                 } else {
+                  setPlace({donor:false,volunteer:false,ngo:false})
                   setConfirmPassword({
                     toggle: true,
                     element: <Text style={{height: 0}}></Text>,
@@ -469,7 +612,7 @@ const login = StyleSheet.create({
     flexGrow: 7,
     justifyContent: 'center',
     padding: 15,
-    overflow:"visible"
+    overflow: 'visible',
   },
   view_7: {
     flexGrow: 2,
@@ -477,7 +620,7 @@ const login = StyleSheet.create({
     alignItems: 'center',
   },
   view_8: {
-    flexGrow:1
+    flexGrow: 1,
   },
   WelcomeTxt: {
     paddingLeft: 30,

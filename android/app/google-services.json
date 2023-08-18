@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "597925002392",
+    "firebase_url": "https://foodmanagementapp-fma-default-rtdb.firebaseio.com",
+    "project_id": "foodmanagementapp-fma",
+    "storage_bucket": "foodmanagementapp-fma.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:597925002392:android:be5ad7210be8ce9a70a4ed",
+        "android_client_info": {
+          "package_name": "com.foodmanagementapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "597925002392-ebbbo0f37javtad3g82q3kdgklh33pdi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABFUsuaVNCwdcfVFKDEkI3lriqMJNHaGI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "597925002392-ebbbo0f37javtad3g82q3kdgklh33pdi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -18,6 +18,20 @@ export default function HomeScreen({navigation,route}: {navigation: any,route:an
   const [userType,setUserType] = React.useState("")
   const [tab,setTab] = React.useState({topBar:<></>,bottomBar:<></>});
   let Flatlist = React.useRef<FlatList>(null);
+
+
+  React.useEffect(
+    () =>
+      navigation.addListener('beforeRemove', (e: {
+        data: any; preventDefault: () => void; 
+}) => {
+
+        // Prevent default behavior of leaving the screen
+        e.preventDefault();
+      }),
+    [navigation]
+  );
+
   
   React.useEffect(()=>{
 
@@ -73,7 +87,7 @@ export default function HomeScreen({navigation,route}: {navigation: any,route:an
                 <Image source={require("./assets/ngo.png")}/>
                 <Text>NGO</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={{justifyContent:"center",alignItems:"center",paddingVertical:2}} onPress={()=>{navigation.navigate("Profile")}}>
+              <TouchableOpacity style={{justifyContent:"center",alignItems:"center",paddingVertical:2}} onPress={()=>{navigation.navigate("Profile",{userType,username : route.params.username,password:route.params.password,mobile:"",defaultLocation:""})}}>
                 <Image source={require("./assets/donor.png")}/>
                 <Text>Profile</Text>
               </TouchableOpacity>
@@ -90,7 +104,7 @@ export default function HomeScreen({navigation,route}: {navigation: any,route:an
         shadowOpacity: 0.8,
         shadowRadius: 5,
       }}>
-                <TouchableOpacity style={home.BottomBar_Circle_v1} onPress={()=>{navigation.navigate("Donation")}}> 
+                <TouchableOpacity style={home.BottomBar_Circle_v1} onPress={()=>{navigation.navigate("Donation",{username:route.params.username})}}> 
                
           <Text style={{textAlign: 'center',fontSize: 60,fontWeight: 'bold',opacity:1,width:"100%",lineHeight:70,verticalAlign:"middle",color:"black"}}>+</Text>
                 </TouchableOpacity>
@@ -144,7 +158,7 @@ export default function HomeScreen({navigation,route}: {navigation: any,route:an
                 <Image source={require("./assets/volunteer.png")}/>
                 <Text>Volunteer</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={{justifyContent:"center",alignItems:"center",paddingVertical:2}} onPress={()=>{navigation.navigate("Profile")}}>
+              <TouchableOpacity style={{justifyContent:"center",alignItems:"center",paddingVertical:2}} onPress={()=>{navigation.navigate("Profile",{userType,username : route.params.username,password:route.params.password,mobile:"",defaultLocation:""})}}>
                 <Image source={require("./assets/ngo.png")}/>
                 <Text>Profile</Text>
               </TouchableOpacity>
@@ -198,7 +212,7 @@ export default function HomeScreen({navigation,route}: {navigation: any,route:an
                 <Image source={require("./assets/map.png")} style={{height:30,resizeMode:"contain"}}/>
                 <Text>Map</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={{justifyContent:"center",alignItems:"center",paddingVertical:2}} onPress={()=>{navigation.navigate("Profile")}}>
+              <TouchableOpacity style={{justifyContent:"center",alignItems:"center",paddingVertical:2}} onPress={()=>{navigation.navigate("Profile",{userType,username : route.params.username,password:route.params.password,mobile:"",defaultLocation:""})}}>
                 <Image source={require("./assets/ngo.png")}/>
                 <Text>Profile</Text>
               </TouchableOpacity>
@@ -232,7 +246,7 @@ export default function HomeScreen({navigation,route}: {navigation: any,route:an
         <View style={home.view_4}>
         <FlatList
                 data={items}
-                renderItem={({ item }) => <Slide slideName={item.name} navigation={navigation} userType={userType}/>}
+                renderItem={({ item }) => (userType)?<Slide slideName={item.name} navigation={navigation} userType={userType} username={route.params.username}/>:null}
                 keyExtractor={(item) => String(item.id)}
                 snapToAlignment="start"
                 decelerationRate={"fast"}

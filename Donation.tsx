@@ -17,10 +17,12 @@ import {useRoute} from '@react-navigation/native';
 import Slide from './Slides';
 import MaskedView from '@react-native-masked-view/masked-view';
 import {DateTimePickerAndroid} from '@react-native-community/datetimepicker';
+import database from '@react-native-firebase/database'
 
 const windowHeight = Dimensions.get('window').height;
 const windowWidth = Dimensions.get('window').width;
 const LinearColor: string[] = ['#FF07E6', '#13D7E3'];
+let idWithDate:Number = Date.now();
 
 export default function DonationScreen({
   navigation,
@@ -29,11 +31,16 @@ export default function DonationScreen({
   navigation: any;
   route: any;
 }) {
-  const [date, setDate] = React.useState(new Date(1598051730000));
+  const [date, setDate] = React.useState(new Date());
+  const [name, setName] = React.useState("");
+  const [type, setType] = React.useState("");
+  const [location, setLocation] = React.useState("");
+  const [weight, setWeight] = React.useState("");
+  const [note, setNote] = React.useState("");
+  const [disable, setDisable] = React.useState(false);
 
   const onChange = (event: any, selectedDate: any) => {
-    const currentDate = selectedDate;
-    setDate(currentDate);
+    setDate(selectedDate);
   };
 
   const showMode = (currentMode: any) => {
@@ -77,17 +84,17 @@ export default function DonationScreen({
           </Text>
         </View>
         <View style={donate.view_2}>
-          <Input label="Name for the Food" placeholder="Place your Text" />
-          <Input label="Type of Food" placeholder="Place your Text" />
-          <Input label="Pickup Location" placeholder="Place your Text" />
+          <Input label="Name for the Food" placeholder="Food Name" onChangeText={(value)=>setName(value)}/>
+          <Input label="Type of Food" placeholder="Place your Text" onChangeText={(value)=>setType(value)}/>
+          <Input label="Pickup Location" placeholder="Place your Text"/>
           <Input
             label="Food Expiry Time"
             placeholder="Place your Text"
             value={date.toDateString()}
             onFocus={() => showMode('date')}
           />
-          <Input label="Weight in KGs" placeholder="Place your Text" />
-          <Input label="Note" placeholder="" numberOfLines={9} multiline={true}/>
+          <Input label="Weight in KGs" placeholder="Place your Text" onChangeText={(value)=>setWeight(value)}/>
+          <Input label="Note" placeholder="" numberOfLines={9} multiline={true} onChangeText={(value)=>setNote(value)}/>
         </View>
         <View style={donate.view_3}>
           <LinearGradient
@@ -104,7 +111,33 @@ export default function DonationScreen({
               shadowOpacity: 1,
               backgroundColor: 'white',
             }}>
-            <Button style={{backgroundColor: 'transparent', borderWidth: 0}}>
+            <Button style={{backgroundColor: 'transparent', borderWidth: 0}} disabled={disable}
+            onPress={()=>{
+              setDisable(true)
+              if(name && date && new Date((date.toISOString()).split('T')[0]).getTime() > new Date(new Date().toISOString().split('T')[0]).getTime()){
+                idWithDate = Date.now()
+                console.log("My Date : ",new Date((date.toISOString()).split('T')[0]).getTime() ,new Date(new Date().toISOString().split('T')[0]).getTime())
+                database()
+                                    .ref(`/donations/${route.params.username.trim()}/${idWithDate}`)
+                                    .set({
+                                      id:idWithDate,
+                                      name: name,
+                                      type:type,
+                                      donor:route.params.username.trim(),
+                                      location:location,
+                                      expiry:date.getMilliseconds(),
+                                      date:Date.now(),
+                                      weight:weight,
+                                      note:note
+                                    }).then(()=>{
+                                      setDisable(false)
+                                    })
+              }else{
+                console.log("Incomplete Input!")
+                setDisable(false)
+              }
+            }}
+            >
               <Animated.Text>Submit</Animated.Text>
             </Button>
           </LinearGradient>

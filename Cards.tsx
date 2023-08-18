@@ -28,7 +28,7 @@ const Donations = (props:any):JSX.Element => {
                     <View style={slide.CardBody}>
                         <View style={slide.CardBodyTitle}><Text style={{fontWeight:"bold"}}>{props.Item.name}</Text></View>
                         <View style={slide.CardBodyContent}>
-                            <Text style={{fontSize:10,lineHeight:18}} numberOfLines={1}><Text style={{fontWeight:"bold"}}>ABc : </Text>Hello World</Text>
+                            <Text style={{fontSize:10,lineHeight:18}} numberOfLines={1}><Text style={{fontWeight:"bold"}}>donor : </Text>{props.Item.name}</Text>
                             <Text style={{fontSize:10,lineHeight:18}} numberOfLines={1}><Text style={{fontWeight:"bold"}}>ABc : </Text>Hello World</Text>
                         </View>
                     </View>
@@ -45,6 +45,31 @@ const NGO = (props:any):JSX.Element => {
         shadowOpacity:0.2,
         shadowRadius:5,}}>
                 <View style={slide.Card} onTouchEnd={()=>props.navigation.navigate("DonationDetails",{userType:props.userType,slideName:props.slideName})}>
+
+                <View style={{borderRightWidth:StyleSheet.hairlineWidth,width:"30%",borderColor:"#ddd"}}>
+                    <Image source={require('./assets/ngo.png')} style={{width:"100%",height:"100%",resizeMode:'contain'}}/>
+                </View>
+                <View style={{width:"70%"}}>
+                    <View style={slide.CardBody}>
+                        <View style={slide.CardBodyTitle}><Text style={{fontWeight:"bold"}}>{props.Item.name}</Text></View>
+                        <View style={slide.CardBodyContent}>
+                            <Text style={{fontSize:10,lineHeight:18}} numberOfLines={1}><Text style={{fontWeight:"bold"}}>ABc : </Text>Hello World</Text>
+                            <Text style={{fontSize:10,lineHeight:18}} numberOfLines={1}><Text style={{fontWeight:"bold"}}>ABc : </Text>Hello World</Text>
+                        </View>
+                    </View>
+                </View>
+                </View>
+            </DropShadow>
+    )
+}
+
+const RequestVolunteer = (props:any):JSX.Element => {
+    return (
+        <DropShadow style={{shadowColor:"black",
+        shadowOffset:{width:0,height:0},
+        shadowOpacity:0.2,
+        shadowRadius:5,}}>
+                <View style={slide.Card} onTouchEnd={()=>props.navigation.navigate("RequestVolunteer",{userType:props.userType,slideName:props.slideName})}>
 
                 <View style={{borderRightWidth:StyleSheet.hairlineWidth,width:"30%",borderColor:"#ddd"}}>
                     <Image source={require('./assets/ngo.png')} style={{width:"100%",height:"100%",resizeMode:'contain'}}/>
@@ -173,7 +198,7 @@ const  Card = (props:any):JSX.Element => {
         }else if(props.userType == "NGO"){
           element =   <Donations Item = {props.Item} slideName={props.slideName} userType={props.userType} navigation={props.navigation}/>
         }else if(props.userType ==  "Volunteer"){
-          element =   <NGO Item = {props.Item} slideName={props.slideName} userType={props.userType} navigation={props.navigation}/>
+          element =   <RequestVolunteer Item = {props.Item} slideName={props.slideName} userType={props.userType} navigation={props.navigation}/>
         }
     }else if(props.slideName == "Accepted"){
 
