@@ -1,4 +1,13 @@
-import {Tab, TabBar, Button, Input} from '@ui-kitten/components';
+import {
+  Tab,
+  TabBar,
+  Button,
+  Input,
+  Select,
+  SelectItem,
+  IndexPath,
+  Modal,
+} from '@ui-kitten/components';
 import React from 'react';
 import {
   Dimensions,
@@ -10,19 +19,17 @@ import {
   Animated,
   TouchableOpacity,
   ScrollView,
+  Alert,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import DropShadow from 'react-native-drop-shadow';
-import {useRoute} from '@react-navigation/native';
-import Slide from './Slides';
-import MaskedView from '@react-native-masked-view/masked-view';
 import {DateTimePickerAndroid} from '@react-native-community/datetimepicker';
-import database from '@react-native-firebase/database'
+import database from '@react-native-firebase/database';
 
 const windowHeight = Dimensions.get('window').height;
 const windowWidth = Dimensions.get('window').width;
 const LinearColor: string[] = ['#FF07E6', '#13D7E3'];
-let idWithDate:Number = Date.now();
+let idWithDate: Number = Date.now();
+const data = ['Veg', 'Non-Veg', 'Pulses', 'Fruits', 'Vegetables'];
 
 export default function DonationScreen({
   navigation,
@@ -32,11 +39,12 @@ export default function DonationScreen({
   route: any;
 }) {
   const [date, setDate] = React.useState(new Date());
-  const [name, setName] = React.useState("");
-  const [type, setType] = React.useState("");
-  const [location, setLocation] = React.useState("");
-  const [weight, setWeight] = React.useState("");
-  const [note, setNote] = React.useState("");
+  const [name, setName] = React.useState('');
+  const [type, setType] = React.useState<IndexPath | IndexPath[]>(
+    new IndexPath(0),
+  );
+  const [weight, setWeight] = React.useState('');
+  const [note, setNote] = React.useState('');
   const [disable, setDisable] = React.useState(false);
 
   const onChange = (event: any, selectedDate: any) => {
@@ -64,7 +72,7 @@ export default function DonationScreen({
               paddingHorizontal: 20,
             }}
             onPress={() => {
-              navigation.navigate('Home');
+              navigation.navigate('Home', {...route.params});
             }}>
             <Image
               source={require('./assets/arrow.png')}
@@ -84,17 +92,51 @@ export default function DonationScreen({
           </Text>
         </View>
         <View style={donate.view_2}>
-          <Input label="Name for the Food" placeholder="Food Name" onChangeText={(value)=>setName(value)}/>
-          <Input label="Type of Food" placeholder="Place your Text" onChangeText={(value)=>setType(value)}/>
-          <Input label="Pickup Location" placeholder="Place your Text"/>
+          <Button
+            onPress={e => {
+              e.preventDefault();
+              navigation.navigate('Location', {...route.params});
+            }}
+            style={{backgroundColor: 'black', width: '95%'}}>
+            {!route.params.region.latitude
+              ? 'Pick Up Location'
+              : 'Location Selected'}
+          </Button>
+          <Input
+            label="Name for the Food"
+            placeholder="Food Name"
+            onChangeText={value => setName(value)}
+          />
+          <Select
+            label="Type of Food"
+            style={{width: '100%'}}
+            value={data[Number(type.toString()) - 1]}
+            selectedIndex={type}
+            onSelect={index => setType(index)}>
+            <SelectItem title="Veg" />
+            <SelectItem title="Non-Veg" />
+            <SelectItem title="Pulses" />
+            <SelectItem title="Fruits" />
+            <SelectItem title="Vegetables" />
+          </Select>
           <Input
             label="Food Expiry Time"
             placeholder="Place your Text"
             value={date.toDateString()}
             onFocus={() => showMode('date')}
           />
-          <Input label="Weight in KGs" placeholder="Place your Text" onChangeText={(value)=>setWeight(value)}/>
-          <Input label="Note" placeholder="" numberOfLines={9} multiline={true} onChangeText={(value)=>setNote(value)}/>
+          <Input
+            label="Weight in KGs"
+            placeholder="Place your Text"
+            onChangeText={value => setWeight(value)}
+          />
+          <Input
+            label="Note"
+            placeholder=""
+            numberOfLines={9}
+            multiline={true}
+            onChangeText={value => setNote(value)}
+          />
         </View>
         <View style={donate.view_3}>
           <LinearGradient
@@ -111,33 +153,90 @@ export default function DonationScreen({
               shadowOpacity: 1,
               backgroundColor: 'white',
             }}>
-            <Button style={{backgroundColor: 'transparent', borderWidth: 0}} disabled={disable}
-            onPress={()=>{
-              setDisable(true)
-              if(name && date && new Date((date.toISOString()).split('T')[0]).getTime() > new Date(new Date().toISOString().split('T')[0]).getTime()){
-                idWithDate = Date.now()
-                console.log("My Date : ",new Date((date.toISOString()).split('T')[0]).getTime() ,new Date(new Date().toISOString().split('T')[0]).getTime())
-                database()
-                                    .ref(`/donations/${route.params.username.trim()}/${idWithDate}`)
-                                    .set({
-                                      id:idWithDate,
-                                      name: name,
-                                      type:type,
-                                      donor:route.params.username.trim(),
-                                      location:location,
-                                      expiry:date.getMilliseconds(),
-                                      date:Date.now(),
-                                      weight:weight,
-                                      note:note
-                                    }).then(()=>{
-                                      setDisable(false)
-                                    })
-              }else{
-                console.log("Incomplete Input!")
-                setDisable(false)
-              }
-            }}
-            >
+            <Button
+              style={{backgroundColor: 'transparent', borderWidth: 0}}
+              disabled={disable}
+              onPress={() => {
+                setDisable(true);
+                console.log(type);
+                if (
+                  name &&
+                  date &&
+                  new Date(date.toISOString().split('T')[0]).getTime() >
+                    new Date(
+                      new Date().toISOString().split('T')[0],
+                    ).getTime() &&
+                  route.params.region.latitude
+                ) {
+                  idWithDate = Date.now();
+                  database()
+                    .ref(`/donations/${route.params.username.trim()}`)
+                    .once('value')
+                    .then(snapshot => {
+                      if (snapshot.val()) {
+                        let data: any = Object.values(snapshot.val());
+
+                        if (
+                          data.every((value: any) => {
+                            if (value.name !== name) return true;
+                          })
+                        ) {
+                          database()
+                            .ref(
+                              `/donations/${route.params.username.trim()}/${idWithDate}`,
+                            )
+                            .set({
+                              id: idWithDate,
+                              name: name,
+                              type: data[Number(type.toString()) - 1],
+                              donor: route.params.username.trim(),
+                              location: route.params.region,
+                              expiry: date.getMilliseconds(),
+                              date: Date.now(),
+                              weight: weight,
+                              note: note,
+                            })
+                            .then(() => {
+                              setDisable(false);
+                              Alert.alert(
+                                'Successfully Submitted',
+                                `Your Donation ${name} is included.`,
+                              );
+                            });
+                        } else {
+                          setDisable(false);
+                          Alert.alert(
+                            'Operation Succesful!',
+                            'Food Name Already Exists!',
+                          );
+                        }
+                      } else {
+                        database()
+                          .ref(
+                            `/donations/${route.params.username.trim()}/${idWithDate}`,
+                          )
+                          .set({
+                            id: idWithDate,
+                            name: name,
+                            type: data[Number(type.toString()) - 1],
+                            donor: route.params.username.trim(),
+                            location: route.params.region,
+                            expiry: date.getMilliseconds(),
+                            date: Date.now(),
+                            weight: weight,
+                            note: note,
+                          })
+                          .then(() => {
+                            setDisable(false);
+                          });
+                      }
+                    });
+                } else {
+                  console.error('Incorrect Input!');
+                  Alert.alert('Unsuccesful!', 'Incorrect Input! Try again');
+                  setDisable(false);
+                }
+              }}>
               <Animated.Text>Submit</Animated.Text>
             </Button>
           </LinearGradient>

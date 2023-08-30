@@ -1,4 +1,9 @@
 {
   "name": "foodManagementApp",
-  "displayName": "foodManagementApp"
+  "displayName": "foodManagementApp",
+  "veg":"./assets/veg.png",
+  "nonveg":"./assets/nonveg.png",
+  "vegetables":"./assets/vegetables.png",
+  "fruits":"./ssets/fruits.png",
+  "pulses":"./assets/pulses.png"
 }

@@ -12,11 +12,6 @@ import {
   ScrollView,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import DropShadow from 'react-native-drop-shadow';
-import {useRoute} from '@react-navigation/native';
-import Slide from './Slides';
-import MaskedView from '@react-native-masked-view/masked-view';
-import * as ImagePicker from 'react-native-image-picker';
 import database from '@react-native-firebase/database';
 
 const windowHeight = Dimensions.get('window').height;
@@ -31,32 +26,26 @@ export default function EditProfileScreen({
   route: any;
 }) {
   const [file, setFile] = React.useState({});
-  const [defaultLocation, setDefaultLocation] = React.useState(route.params.defaultLocation);
+  const [defaultLocation, setDefaultLocation] = React.useState(
+    route.params.defaultLocation,
+  );
   const [mobile, setMobile] = React.useState(route.params.mobile);
   const [currentPass, setCurrentPass] = React.useState(route.params.password);
-  const [newPass, setnewPass] = React.useState("");
-  const [confirmPass, setconfirmPass] = React.useState("");
+  const [newPass, setnewPass] = React.useState('');
+  const [confirmPass, setconfirmPass] = React.useState('');
   const [disable, setDisable] = React.useState(false);
-
-  const chooseFile = () => {
-
-    setFile(ImagePicker.launchImageLibrary({mediaType:'photo'}))
-    console.log(file)
-    
-  };
 
   return (
     <ScrollView style={profile.ScrollView}>
       <View style={profile.ParentView}>
         <View style={[profile.view_1, profile.view_2]}>
-          <View style={profile.ProfileImage} onTouchEnd={()=> chooseFile()}>
-            <Text>Upload Your</Text>
-            <Text>Image</Text>
-          </View>
+          <Text>Edit Your Profile</Text>
         </View>
         <View style={profile.view_3}>
           <View>
-            <Text style={{fontSize: 25, color: 'black', fontWeight: 'bold'}} numberOfLines={1}>
+            <Text
+              style={{fontSize: 25, color: 'black', fontWeight: 'bold'}}
+              numberOfLines={1}>
               {route.params.username}
             </Text>
           </View>
@@ -65,21 +54,46 @@ export default function EditProfileScreen({
           </View>
         </View>
         <View style={profile.view_4}>
-          <Input label="Default Location" placeholder="Your Location" value={String(defaultLocation)} onChangeText={(value)=>{
-            setDefaultLocation(value);
-          }}/>
-          <Input label="Mobile" placeholder="Your Mobile Number" value={String(mobile)} onChangeText={(value)=>{
-            setMobile(value);
-          }}/>
-          <Input label="Current Passward" placeholder="Your Password" value={String(currentPass)} onChangeText={(value)=>{
-            setCurrentPass(value);
-          }}/>
-          <Input label="New Passward" placeholder="Your New Password" value={String(newPass)} onChangeText={(value)=>{
-            setnewPass(value);
-          }}/>
-          <Input label="Confirm Passward" placeholder="Type New Password Again" value={String(confirmPass)} onChangeText={(value)=>{
-            setconfirmPass(value);
-          }} />
+          <Input
+            label="Default Location"
+            placeholder="Your Location"
+            value={String(defaultLocation)}
+            onChangeText={value => {
+              setDefaultLocation(value);
+            }}
+          />
+          <Input
+            label="Mobile"
+            placeholder="Your Mobile Number"
+            value={String(mobile)}
+            onChangeText={value => {
+              setMobile(value);
+            }}
+          />
+          <Input
+            label="Current Passward"
+            placeholder="Your Password"
+            value={String(currentPass)}
+            onChangeText={value => {
+              setCurrentPass(value);
+            }}
+          />
+          <Input
+            label="New Passward"
+            placeholder="Your New Password"
+            value={String(newPass)}
+            onChangeText={value => {
+              setnewPass(value);
+            }}
+          />
+          <Input
+            label="Confirm Passward"
+            placeholder="Type New Password Again"
+            value={String(confirmPass)}
+            onChangeText={value => {
+              setconfirmPass(value);
+            }}
+          />
         </View>
         <View style={profile.view_5}>
           <LinearGradient
@@ -96,19 +110,45 @@ export default function EditProfileScreen({
               shadowOpacity: 1,
               backgroundColor: 'white',
             }}>
-            <Button disabled={disable}
+            <Button
+              disabled={disable}
               style={{backgroundColor: 'transparent', borderWidth: 0}}
               onPress={() => {
-                setDisable(true)
+                setDisable(true);
 
-                if(newPass == confirmPass){
+                if (newPass == confirmPass) {
                   database()
-                                  .ref(`/users/${route.params.username.trim()}/password`)
-                                  .set(newPass).then(()=>{
-                                    setDisable(false)
-                                    navigation.navigate('Profile',{username : route.params.username,password : newPass,userType: route.params.userType,mobile,defaultLocation});
-                                  })
-
+                    .ref(`/users/${route.params.username.trim()}/file`)
+                    .set(file)
+                    .then(() => {
+                      database()
+                        .ref(`/users/${route.params.username.trim()}/password`)
+                        .set(newPass)
+                        .then(() => {
+                          database()
+                            .ref(
+                              `/users/${route.params.username.trim()}/mobile`,
+                            )
+                            .set(mobile)
+                            .then(() => {
+                              database()
+                                .ref(
+                                  `/users/${route.params.username.trim()}/location`,
+                                )
+                                .set(defaultLocation)
+                                .then(() => {
+                                  setDisable(false);
+                                  navigation.navigate('Profile', {
+                                    username: route.params.username,
+                                    password: newPass,
+                                    userType: route.params.userType,
+                                    mobile,
+                                    defaultLocation,
+                                  });
+                                });
+                            });
+                        });
+                    });
                 }
               }}>
               <Animated.Text>Done</Animated.Text>
@@ -159,7 +199,7 @@ const profile = StyleSheet.create({
     width: '30%',
     aspectRatio: 1,
     backgroundColor: 'white',
-    justifyContent:"center",
-    alignItems:"center"
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

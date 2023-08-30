@@ -1,6 +1,12 @@
 import React, {useState} from 'react';
 import * as eva from '@eva-design/eva';
-import {ApplicationProvider, Layout, Text, Button} from '@ui-kitten/components';
+import {
+  ApplicationProvider,
+  Layout,
+  Text,
+  Button,
+  Spinner,
+} from '@ui-kitten/components';
 import {
   Dimensions,
   ScrollView,
@@ -13,6 +19,7 @@ import {
   Image,
   Animated,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import MaskedView from '@react-native-masked-view/masked-view';
 import LinearGradient from 'react-native-linear-gradient';
@@ -23,7 +30,7 @@ import EncryptedStorage from 'react-native-encrypted-storage';
 const windowHeight = Dimensions.get('window').height;
 const windowWidth = Dimensions.get('window').width;
 const LinearColor: string[] = ['#FF07E6', '#8A6EE5', '#13D7E3'];
-let currentRole:string = "";
+let currentRole: string = '';
 
 if (
   Platform.OS === 'android' &&
@@ -31,19 +38,20 @@ if (
 ) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
-
-async function storeUserSession(username:string,place:any) {
+async function storeUserSession(username: string, place: any) {
   try {
-      await EncryptedStorage.setItem(
-          "user_session",
-          JSON.stringify({
-              username,place
-          })
-      );
+    await EncryptedStorage.removeItem('user_session');
+    await EncryptedStorage.setItem(
+      'user_session',
+      JSON.stringify({
+        username,
+        place,
+      }),
+    );
 
-      // Congrats! You've just stored your first value!
+    // Congrats! You've just stored your first value!
   } catch (error) {
-      // There was an error on the native side
+    // There was an error on the native side
   }
 }
 
@@ -78,6 +86,23 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
       style={login.ScrollView}
       automaticallyAdjustKeyboardInsets={true}>
       <View style={login.ParentView}>
+        {loginBtnDisable ? (
+          <View
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              zIndex: 999,
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: windowWidth,
+              height: windowHeight,
+              backgroundColor: 'rgba(255,255,255,0.8)',
+            }}>
+            <Spinner size="giant" status="info" />
+          </View>
+        ) : null}
+
         <View style={login.view_1}>
           <Text style={login.WelcomeTxt}>Welcome To</Text>
         </View>
@@ -115,7 +140,7 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
               padding: 2,
               width: '95%',
               borderRadius: 5,
-              zIndex: 999,
+              zIndex: 998,
               elevation: 5,
               shadowColor: 'black',
               shadowOffset: {width: 20, height: 20},
@@ -138,7 +163,7 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
               padding: 2,
               width: '95%',
               borderRadius: 5,
-              zIndex: 999,
+              zIndex: 998,
               elevation: 5,
               shadowColor: 'black',
               shadowOffset: {width: 20, height: 20},
@@ -316,14 +341,13 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
               shadowOpacity: 1,
               backgroundColor: 'white',
             }}>
-            <Button  disabled={loginBtnDisable}
+            <Button
+              disabled={loginBtnDisable}
               style={login.LoginBtn}
               size="giant"
               onPress={() => {
-
-                try{
-
-                  setLoginBtndisable(true)
+                try {
+                  setLoginBtndisable(true);
                   if (confirmPassword.toggle) {
                     if (
                       username &&
@@ -336,48 +360,60 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
                           password.match(/[^a-zA-Z0-9@#\s]/g)
                         )
                       ) {
-                        
                         setUsername(username.trim());
-                        if(place.donor){
-                          currentRole = "D"
-                        }else if(place.ngo){
-                          currentRole = "N"
-                        }else{
-                          currentRole = "V"
+                        if (place.donor) {
+                          currentRole = 'D';
+                        } else if (place.ngo) {
+                          currentRole = 'N';
+                        } else {
+                          currentRole = 'V';
                         }
                         database()
                           .ref(`/users/${username.trim()}`)
                           .once('value')
                           .then(snapshot => {
-                            let user = snapshot.val()
-                            if (user && user.password == password && (user.role.split("")).indexOf(currentRole) > -1) {
-                              setLoginBtndisable(false)
-                              storeUserSession(username.trim(),place)
+                            let user = snapshot.val();
+
+                            if (
+                              user &&
+                              user.password == password &&
+                              user.role.split('').indexOf(currentRole) > -1
+                            ) {
+                              setLoginBtndisable(false);
+                              storeUserSession(username.trim(), place);
+                              database()
+                                .ref(`/users/${username.trim()}/authenticated`)
+                                .set(true);
                               navigation.navigate('Home', {
                                 place,
                                 username,
                                 password,
-                                user
+                                user,
                               });
                             } else {
-                              setLoginBtndisable(false)
-                              if(user.password == password){
-                                console.error('Invalid Password');
-                              }else if((user.role.split("")).indexOf(currentRole) == -1){
-                                console.error('Invalid role');
-                              }else{
-                                console.error('Please Sign Up');
-  
+                              setLoginBtndisable(false);
+                              if (!user) {
+                                Alert.alert('Successfull!', 'Please Sign Up');
+                                return;
+                              }
+                              if (user.password !== password) {
+                                Alert.alert('Successfull!', 'Invalid Password');
+                              } else if (
+                                user.role.split('').indexOf(currentRole) == -1
+                              ) {
+                                Alert.alert('Successfull!', 'Invalid role');
+                              } else {
+                                Alert.alert('Successfull!', 'Please Sign Up');
                               }
                             }
                           });
-                      }else{
-                        console.error("Invalid Input")
-                        setLoginBtndisable(false)
+                      } else {
+                        Alert.alert('Successfull!', 'Invalid Input');
+                        setLoginBtndisable(false);
                       }
-                    }else{
-                      console.error("Incomplete Input")
-                      setLoginBtndisable(false)
+                    } else {
+                      Alert.alert('Successfull!', 'Incomplete Input');
+                      setLoginBtndisable(false);
                     }
                   } else {
                     if (
@@ -389,26 +425,25 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
                       if (
                         !(
                           username.trim().match(/[^a-zA-Z0-9\s]/g) ||
-                          password
-                            .match(
-                              /[^a-zA-Z0-9@#\s]/g ||
-                                cp.trim().match(/[^a-zA-Z0-9@#\s]/g),
-                            )
+                          password.match(
+                            /[^a-zA-Z0-9@#\s]/g ||
+                              cp.trim().match(/[^a-zA-Z0-9@#\s]/g),
+                          )
                         )
                       ) {
                         setUsername(username.trim());
-                        currentRole = ""
+                        currentRole = '';
                         if (password == cp) {
-                          if(place.donor){
-                            currentRole += 'D'
+                          if (place.donor) {
+                            currentRole += 'D';
                           }
-                          if(place.ngo){
-                            currentRole += "N"
+                          if (place.ngo) {
+                            currentRole += 'N';
                           }
-                          if(place.volunteer){
-                            currentRole += "V"
+                          if (place.volunteer) {
+                            currentRole += 'V';
                           }
-                          
+
                           database()
                             .ref(`/users/${username}`)
                             .once('value')
@@ -419,10 +454,11 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
                                   .set({
                                     name: username.trim(),
                                     password: password,
-                                    role:currentRole,
-                                    mobile:"",
-                                    location:"",
-                                    authenticated:false
+                                    role: currentRole,
+                                    mobile: '',
+                                    location: '',
+                                    authenticated: false,
+                                    id: Date.now(),
                                   })
                                   .then(() => {
                                     LayoutAnimation.configureNext({
@@ -445,14 +481,14 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
                                         toggle: false,
                                         element: (
                                           <LinearGradient
-                                          start={{x: 0, y: 0}}
-                                          end={{x: 1, y: 0}}
-                                          colors={LinearColor}
+                                            start={{x: 0, y: 0}}
+                                            end={{x: 1, y: 0}}
+                                            colors={LinearColor}
                                             style={{
                                               padding: 2,
                                               width: '95%',
                                               borderRadius: 5,
-                                              zIndex: 999,
+                                              zIndex: 998,
                                               elevation: 5,
                                               shadowColor: 'black',
                                               shadowOffset: {
@@ -463,47 +499,52 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
                                               backgroundColor: 'white',
                                             }}>
                                             <TextInput
-                                              onChangeText={value => setCP(value)}
+                                              onChangeText={value =>
+                                                setCP(value)
+                                              }
                                               inlineImageLeft="password"
                                               inlineImagePadding={50}
                                               style={login.Input}
                                               placeholder=" Confirm Password"
-                                              />
+                                            />
                                           </LinearGradient>
                                         ),
                                       });
                                     } else {
-                                      setPlace({donor:false,volunteer:false,ngo:false})
+                                      setPlace({
+                                        donor: false,
+                                        volunteer: false,
+                                        ngo: false,
+                                      });
                                       setConfirmPassword({
                                         toggle: true,
                                         element: (
                                           <Text style={{height: 0}}></Text>
-                                          ),
-                                        });
-                                      }
-                                      setLoginBtndisable(false)
+                                        ),
+                                      });
+                                    }
+                                    setLoginBtndisable(false);
                                   });
                               } else {
-                                console.error('Username Exists');
-                                setLoginBtndisable(false)
+                                Alert.alert('Successfull!', 'Username Exists');
+                                setLoginBtndisable(false);
                               }
                             });
                         } else {
-                          console.error('password != cp');
-                          setLoginBtndisable(false)
+                          Alert.alert('Successfull!', 'password != cp');
+                          setLoginBtndisable(false);
                         }
-                      }else{
-                        console.error("Invalid Input")
-                        setLoginBtndisable(false)
+                      } else {
+                        Alert.alert('Successfull!', 'Invalid Input');
+                        setLoginBtndisable(false);
                       }
-                    }else{
-                      console.error("Incomplete Input")
-                        setLoginBtndisable(false)
+                    } else {
+                      Alert.alert('Successfull!', 'Incomplete Input');
+                      setLoginBtndisable(false);
                     }
-                    
                   }
-                } catch{
-                  console.error("Unexpected Error Occured!")
+                } catch {
+                  Alert.alert('Successfull!', 'Unexpected Error Occured!');
                 }
               }}>
               <Animated.Text
@@ -534,14 +575,14 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
                     toggle: false,
                     element: (
                       <LinearGradient
-                      start={{x: 0, y: 0}}
-                      end={{x: 1, y: 0}}
-                      colors={LinearColor}
-                      style={{
-                        padding: 2,
-                        width: '95%',
-                        borderRadius: 5,
-                          zIndex: 999,
+                        start={{x: 0, y: 0}}
+                        end={{x: 1, y: 0}}
+                        colors={LinearColor}
+                        style={{
+                          padding: 2,
+                          width: '95%',
+                          borderRadius: 5,
+                          zIndex: 998,
                           elevation: 5,
                           shadowColor: 'black',
                           shadowOffset: {width: 20, height: 20},
@@ -554,12 +595,12 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
                           inlineImagePadding={50}
                           style={login.Input}
                           placeholder=" Confirm Password"
-                          />
+                        />
                       </LinearGradient>
                     ),
                   });
                 } else {
-                  setPlace({donor:false,volunteer:false,ngo:false})
+                  setPlace({donor: false, volunteer: false, ngo: false});
                   setConfirmPassword({
                     toggle: true,
                     element: <Text style={{height: 0}}></Text>,
