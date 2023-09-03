@@ -28,8 +28,7 @@ export default function VolunteerNGO({
   const [items, setItems] = React.useState([
     {id: 1, name: 'Volunteer'},
     {id: 2, name: 'VolReq'},
-    {id: 3, name: 'VolAccepted'},
-    {id: 4, name: 'Map'},
+    {id: 3, name: 'VolAccepted'}
   ]);
   let Flatlist = React.useRef<FlatList>(null);
 
@@ -95,7 +94,7 @@ export default function VolunteerNGO({
                   Request
                 </Text>
               </View>
-              <View style={{paddingRight: 20}}>
+              <View style={{paddingRight: 5}}>
                 <Text
                   style={{color: 'black', textAlign: 'center'}}
                   onPress={() => {
@@ -107,23 +106,12 @@ export default function VolunteerNGO({
                   Accepted
                 </Text>
               </View>
-              <View style={{paddingHorizontal: 10}}>
-                <Text
-                  style={{color: 'black'}}
-                  onPress={() => {
-                    Flatlist.current?.scrollToIndex({
-                      animated: true,
-                      index: 3,
-                    });
-                  }}>
-                  Map
-                </Text>
-              </View>
+            
             </View>
             <View style={donorngo.TopBar_v2}>
               <Animated.View
                 style={{
-                  width: '25%',
+                  width: '33%',
                   position: 'relative',
                   left: selectedIndex,
                 }}>
@@ -161,7 +149,7 @@ export default function VolunteerNGO({
             horizontal
             onScroll={eve => {
               Animated.timing(selectedIndex, {
-                toValue: eve.nativeEvent.contentOffset.x / 4,
+                toValue: eve.nativeEvent.contentOffset.x / 3,
                 useNativeDriver: false,
                 duration: 10,
               }).start();

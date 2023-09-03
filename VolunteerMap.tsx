@@ -25,7 +25,6 @@ let UpdateLoc = (route:any,region:any)=>{
   setInterval(() => {
       Geolocation.getCurrentPosition(
         position => {
-          console.log("volunteerMap")
           database()
             .ref(`/delivery/${route.params.username.trim()}/geo`)
             .set({
@@ -58,7 +57,6 @@ const requestLocationPermission = async () => {
       },
     );
     if (granted === 'granted') {
-      console.log('You can use Geolocation');
       return true;
     } else {
       Alert.alert('You cannot use Geolocation');
@@ -217,7 +215,6 @@ export default function VolunteerMap({
 
   let mapMarkers = () => {
     return items.map((report: any, index: number) => {
-      console.log(report.color)
       return <Marker
       key={index}
       coordinate={report.region}

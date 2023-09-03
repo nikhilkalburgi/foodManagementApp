@@ -18,78 +18,12 @@ import {Spinner} from '@ui-kitten/components';
 const windowHeight = Dimensions.get('window').height;
 const windowWidth = Dimensions.get('window').width;
 
-const requestLocationPermission = async () => {
-  try {
-    const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-      {
-        title: 'Geolocation Permission',
-        message: 'Can we access your location?',
-        buttonNeutral: 'Ask Me Later',
-        buttonNegative: 'Cancel',
-        buttonPositive: 'OK',
-      },
-    );
-    if (granted === 'granted') {
-      return true;
-    } else {
-      Alert.alert('You cannot use Geolocation');
-      return false;
-    }
-  } catch (err) {
-    return false;
-  }
-};
+
 
 const Slide = (props: any): JSX.Element => {
-  const getLocation = (region: any, setRegion: any, setShowMap: any) => {
-    const result = requestLocationPermission();
-    result.then(res => {
-      if (res) {
-        if(props.userType == "Volunteer")
-        setInterval(() => {
-          Geolocation.getCurrentPosition(
-            position => {
-              database()
-                .ref(`/delivery/${props.username.trim()}/geo`)
-                .set({
-                  latitude: position.coords.latitude,
-                  longitude: position.coords.longitude,
-                  latitudeDelta: region.latitudeDelta,
-                  longitudeDelta: region.longitudeDelta,
-                });
-            },
-            error => {
-              // See error code charts below.
-              Alert.alert("Error!", error.message);
-            },
-            {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
-          );
-        }, 10000);
-        Geolocation.getCurrentPosition(
-          position => {
-            setRegion({
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-              latitudeDelta: region.latitudeDelta,
-              longitudeDelta: region.longitudeDelta,
-            });
-            setShowMap(true);
-          },
-          error => {
-            // See error code charts below.
-            Alert.alert("Error!", error.message);
-
-            setShowMap(true);
-          },
-          {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
-        );
-      }
-    });
-  };
+ 
 
   const [items, setItems]: any = React.useState([]);
-  const [showMap, setShowMap] = React.useState(false);
   const [region, setRegion] = React.useState({
     latitude: 51.5079145,
     longitude: -0.0899163,
@@ -101,128 +35,6 @@ const Slide = (props: any): JSX.Element => {
   React.useEffect(() => {
 
     try{
-
-      getLocation(region, setRegion, setShowMap);
-      if (props.slideName == 'Map') {
-        database()
-          .ref(`volreq/${props.username.trim()}`)
-          .once('value', snapshot => {
-            let data = snapshot.val();
-            let ele: {
-              region: any;
-              title: {type: string; name: any} | {type: string; name: any};
-              mobile: any;
-              id: any;
-            } | null = null;
-            if (data) {
-              let array: any[] = [];
-              data = Object.values(data);
-              data.forEach((val: any) => {
-                if(val.status == 'InProgress'){
-                  
-                  if (val.pickup) {
-                    val.pickup.sort(
-                      (a: any, b: any) =>
-                        Math.abs(a.location.latitude - region.latitude) +
-                        Math.abs(a.location.longitude - region.longitude),
-                    );
-                    val.pickup.forEach((value: any) => {
-                      if (value.location.latitude && value.location.longitude)
-                        array.push({
-                          region: value.location,
-                          title: {type: 'Donor', name: value.donor},
-                          mobile: value.mobile,
-                          id: value.id,
-                        });
-                    });
-                  }
-    
-                  database()
-                    .ref(`/delivery/${val.name.trim()}/geo`)
-                    .once('value', snapshot => {
-                      if(snapshot.val()){  
-                        ele = {
-                          region: snapshot.val(),
-                          title: {type: 'Volunteer', name: val.name},
-                          mobile: val.mobile,
-                          id: val.id,
-                        };
-                        array.push(ele);
-                        if (array.length) setItems(array);
-                      }
-                    });
-                  database()
-                    .ref(`/delivery/${val.name.trim()}/geo`)
-                    .on('value', snapshot => {
-                      if(snapshot.val()){
-                        
-                        if (ele)
-                          array.splice(array.indexOf(ele), 1, {
-                            region: snapshot.val(),
-                            title: {type: 'Volunteer', name: val.name},
-                            mobile: val.mobile,
-                            id: val.id,
-                          });
-        
-                        ele = {
-                          region: snapshot.val(),
-                          title: {type: 'Volunteer', name: val.name},
-                          mobile: val.mobile,
-                          id: val.id,
-                        };
-                        if(array.length)
-                        setItems(array);
-                      }
-                    });
-                  }
-                });
-                if (array.length) setItems(array);
-                        setShowMap(false)
-                        setShowMap(true)
-            }
-              });
-  
-              database()
-          .ref(`volreq/${props.username.trim()}`)
-          .on('value', snapshot => {
-            let data = snapshot.val();
-            let ele: {
-              region: any;
-              title: {type: string; name: any} | {type: string; name: any};
-              mobile: any;
-              id: any;
-            } | null = null;
-            if (data) {
-              let array: any[] = [];
-              data = Object.values(data);
-              data.forEach((val: any) => {
-                if (val.status == "InProgress" && val.pickup) {
-                  val.pickup.sort(
-                    (a: any, b: any) =>
-                      Math.abs(a.location.latitude - region.latitude) +
-                      Math.abs(a.location.longitude - region.longitude),
-                  );
-                  val.pickup.forEach((value: any) => {
-                    if (value.location.latitude && value.location.longitude)
-                      array.push({
-                        region: value.location,
-                        title: {type: 'Donor', name: value.donor},
-                        mobile: value.mobile,
-                        id: value.id,
-                      });
-                  });
-                }
-  
-                
-              });
-              if (array.length){
-                setItems(array);
-                setShowMap(false)
-                setShowMap(true)
-              } 
-            }
-              });
-      }
   
       if (props.slideName == 'Donations' && props.userType == 'Donor') {
         database()
@@ -773,24 +585,10 @@ const Slide = (props: any): JSX.Element => {
     }
   }, []);
 
-  let mapMarkers = () => {
-    return items.map((report: any, index: number) => {
-      return <Marker
-        key={index}
-        coordinate={{latitude:report.region.latitude,longitude:report.region.longitude}}
-        title={`${report.title.type} : ${report.title.name}`}
-        pinColor={(report.title.type == 'Volunteer')?'green':'blue'}
-        description={
-          report.mobile ? `Mobile : ${report.mobile}` : `${index+1}`
-        }></Marker>
-    });
-    setShowMap(false);
-    setShowMap(true);
-  };
+ 
 
   return (
     <View style={slide.Container}>
-      {props.slideName != 'Map' ? (
         <FlatList
           data={items}
           renderItem={({item}) => (
@@ -811,46 +609,7 @@ const Slide = (props: any): JSX.Element => {
           showsHorizontalScrollIndicator={false}
           showsVerticalScrollIndicator={false}
         />
-      ) : showMap ? (
-        <View style={slide.container}>
-          <MapView
-            provider={PROVIDER_GOOGLE}
-            style={slide.map}
-            //specify our coordinates.
-            initialRegion={
-              items.length
-                ? {
-                    ...items[0].region,
-                    latitudeDelta: region.latitudeDelta,
-                    longitudeDelta: region.longitudeDelta,
-                  }
-                : region
-            }
-            onRegionChangeComplete={region => {
-              setRegion(region);
-            }}
-            showsUserLocation
-            showsTraffic
-            showsCompass>
-            {mapMarkers()}
-          </MapView>
-        </View>
-      ) : (
-        <View
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            zIndex: 999,
-            justifyContent: 'center',
-            alignItems: 'center',
-            width: windowWidth,
-            height: windowHeight,
-            backgroundColor: 'rgba(255,255,255,0.8)',
-          }}>
-          <Spinner size="giant" status="info" />
-        </View>
-      )}
+      
     </View>
   );
 };

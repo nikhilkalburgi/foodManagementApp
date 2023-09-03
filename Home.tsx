@@ -333,7 +333,6 @@ export default function HomeScreen({
                     style={{
                       justifyContent: 'center',
                       alignItems: 'center',
-                      paddingVertical: 2,
                     }}
                     onPress={() => {
                       navigation.navigate('DonorNGOVolunteer', {
@@ -347,13 +346,12 @@ export default function HomeScreen({
                       });
                     }}>
                     <Image source={require('./assets/request.png')} style={{width:"50%",resizeMode:"contain"}}/>
-                    <Text style={{marginTop:-3}}>Requests</Text>
+                    <Text style={{marginTop:-2}}>Requests</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={{
                       justifyContent: 'center',
                       alignItems: 'center',
-                      paddingVertical: 2,
                     }}
                     onPress={() => {
                       navigation.navigate('VolunteerNGO', {
@@ -373,7 +371,25 @@ export default function HomeScreen({
                     style={{
                       justifyContent: 'center',
                       alignItems: 'center',
-                      paddingVertical: 2,
+                    }}
+                    onPress={() => {
+                      navigation.navigate('NGOMap', {
+                        userType: 'NGO',
+                        username: route.params.username.trim(),
+                        password: route.params.password,
+                        mobile: '',
+                        defaultLocation: '',
+                        place: route.params.place,
+                        user: route.params.user,
+                      });
+                    }}>
+                    <Image source={require('./assets/map.png')} style={{width:"100%",resizeMode:"contain",marginTop:-4}}/>
+                    <Text style={{marginTop:-5}}>Map</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{
+                      justifyContent: 'center',
+                      alignItems: 'center',
                     }}
                     onPress={() => {
                       navigation.navigate('Profile', {
@@ -387,7 +403,7 @@ export default function HomeScreen({
                       });
                     }}>
                     <Image source={require('./assets/donor.png')} style={{width:"90%",resizeMode:"contain"}}/>
-                    <Text style={{marginTop:-0}}>Profile</Text>
+                    <Text>Profile</Text>
                   </TouchableOpacity>
                 </View>
               </DropShadow>

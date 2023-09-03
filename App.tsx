@@ -22,6 +22,7 @@ import DonorNGODetails from './DonorNGODetails';
 import Location from './Location';
 import VolunteerMap from './VolunteerMap';
 import VolunteerDonor from './VolunteerDonor';
+import NGOMap from './NGOMap';
 
 let initialPage = 'Login',
   params = {};
@@ -86,6 +87,7 @@ function AppStack(props: any) {
       <Stack.Screen name="VolunteerDonor" component={VolunteerDonor} />
       <Stack.Screen name="DonorNGODetails" component={DonorNGODetails} />
       <Stack.Screen name="Location" component={Location} />
+      <Stack.Screen name="NGOMap" component={NGOMap} />
     </Stack.Navigator>
   ) : null;
 }
