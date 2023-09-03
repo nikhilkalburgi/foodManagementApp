@@ -33,11 +33,23 @@ const Note = (props: any): JSX.Element => {
             width: '30%',
             borderColor: '#ddd',
             margin: 10,
+            marginTop:0
           }}>
-          <Image
-            source={require('./assets/search.png')}
-            style={{width: '100%', height: '100%', resizeMode: 'contain'}}
-          />
+          <View
+                style={{
+                  borderRadius: 100,
+                  borderWidth: 3,
+                  borderColor: 'black',
+                  width: windowWidth * 0.25,
+                  height: windowWidth * 0.25,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  backgroundColor: 'white',
+                }}>
+                <Text style={{fontSize: 50, color: 'black'}}>
+                  {props.Item.name[0].toUpperCase()}
+                </Text>
+              </View>
         </View>
         <View style={{width: '70%'}}>
           <View style={notify.CardBody}>
@@ -66,7 +78,7 @@ export default function NotificationScreen({
   navigation: any;
   route: any;
 }) {
-  const [items, setItems] = React.useState([{id: 1}]);
+  const [items, setItems] = React.useState([]);
 
   React.useEffect(() => {
     database()
@@ -75,6 +87,10 @@ export default function NotificationScreen({
         if (snapshot.val()) {
           let data: any = Object.values(snapshot.val());
           setItems(data);
+          data.forEach((value:any)=>{
+            database()
+            .ref(`/notifications/${route.params.username}/${value.id}/status`).set('read')
+          })
         }
       });
     database()
@@ -84,6 +100,10 @@ export default function NotificationScreen({
         if (snapshot.val()) {
           let data: any = Object.values(snapshot.val());
           setItems(data);
+          data.forEach((value:any)=>{
+            database()
+            .ref(`/notifications/${route.params.username}/${value.id}/status`).set('read')
+          })
         }
       });
   }, []);
@@ -112,8 +132,9 @@ export default function NotificationScreen({
             position: 'absolute',
             left: '45%',
             transform: [{translateX: -windowWidth * 0.1}],
-            fontSize: 25,
+            fontSize: 20,
             color: 'black',
+            top:2
           }}>
           Notification
         </Text>
@@ -126,7 +147,7 @@ export default function NotificationScreen({
               <Note Item={item} />
             </View>
           )}
-          keyExtractor={item => String(item.id)}
+          keyExtractor={(item:any) => String(item.id)}
           showsHorizontalScrollIndicator={false}
           showsVerticalScrollIndicator={false}
         />

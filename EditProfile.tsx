@@ -1,4 +1,4 @@
-import {Tab, TabBar, Button, Input} from '@ui-kitten/components';
+import {Tab, TabBar, Button, Input, Spinner} from '@ui-kitten/components';
 import React from 'react';
 import {
   Dimensions,
@@ -38,6 +38,22 @@ export default function EditProfileScreen({
   return (
     <ScrollView style={profile.ScrollView}>
       <View style={profile.ParentView}>
+      {disable ? (
+          <View
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              zIndex: 999,
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: windowWidth,
+              height: windowHeight,
+              backgroundColor: 'rgba(255,255,255,0.8)',
+            }}>
+            <Spinner size="giant" status="info" />
+          </View>
+        ) : null}
         <View style={[profile.view_1, profile.view_2]}>
           <Text>Edit Your Profile</Text>
         </View>

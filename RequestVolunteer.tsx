@@ -9,6 +9,7 @@ import {
   Animated,
   TouchableOpacity,
   ScrollView,
+  Alert,
 } from 'react-native';
 import DropShadow from 'react-native-drop-shadow';
 import database from '@react-native-firebase/database';
@@ -44,7 +45,7 @@ export default function RequestVolunteer({
               paddingHorizontal: 20,
             }}
             onPress={() => {
-              navigation.navigate('Home');
+              navigation.navigate('Home',{...route.params});
             }}>
             <Image
               source={require('./assets/arrow.png')}
@@ -78,38 +79,45 @@ export default function RequestVolunteer({
                 zIndex: 999,
               }}
               onPress={() => {
-                database()
-                  .ref(
-                    `/volreq/${route.params.username.trim()}/${
-                      route.params.Item.id
-                    }/status`,
-                  )
-                  .set('InProgress');
-                database()
-                  .ref(
-                    `/volreq/${route.params.Item.ngo.trim()}/${
-                      route.params.Item.id
-                    }/status`,
-                  )
-                  .set('InProgress');
-                route.params.Item.pickup.forEach((value: any, index: any) => {
+                try{
+
                   database()
                     .ref(
-                      `/requests/${route.params.Item.ngo.trim()}/${
-                        value.id
+                      `/volreq/${route.params.username.trim()}/${
+                        route.params.Item.id
                       }/status`,
                     )
                     .set('InProgress');
                   database()
-                    .ref(`/requests/${value.donor.trim()}/${value.id}/status`)
+                    .ref(
+                      `/volreq/${route.params.Item.ngo.trim()}/${
+                        route.params.Item.id
+                      }/status`,
+                    )
                     .set('InProgress');
-                  database()
-                    .ref(`/delivery/${value.donor.trim()}/${value.id}`)
-                    .set({
-                      volunteer: route.params.username.trim(),
-                      id: route.params.Item.Id,
-                    });
-                });
+                  route.params.Item.pickup.forEach((value: any, index: any) => {
+                    database()
+                      .ref(
+                        `/requests/${route.params.Item.ngo.trim()}/${
+                          value.id
+                        }/status`,
+                      )
+                      .set('InProgress');
+                    database()
+                      .ref(`/requests/${value.donor.trim()}/${value.id}/status`)
+                      .set('InProgress');
+                    database()
+                      .ref(`/delivery/${value.donor.trim()}/${value.id}`)
+                      .set({
+                        volunteer: route.params.username.trim(),
+                        id: route.params.Item.id,
+                      });
+                  });
+                  Alert.alert('Successfully Added to the Map!',`NGO ${route.params.Item.ngo} is in progress.`)
+                }
+                catch(err){
+
+                }
               }}>
               <Text style={{flexGrow: 1, textAlign: 'center'}}>Begin</Text>
             </TouchableOpacity>
@@ -165,8 +173,7 @@ export default function RequestVolunteer({
                     flexGrow: 1,
                   }}
                   numberOfLines={1}>
-                  <Text style={{fontWeight: 'bold'}}>Food Type : </Text>Hello
-                  World
+                  <Text style={{fontWeight: 'bold'}}>Mobile : </Text>{route.params.Item.mobile}
                 </Text>
                 <Text
                   style={{
@@ -176,7 +183,17 @@ export default function RequestVolunteer({
                     flexGrow: 1,
                   }}
                   numberOfLines={1}>
-                  <Text style={{fontWeight: 'bold'}}>Date : </Text>Hello World
+                  <Text style={{fontWeight: 'bold'}}>Date : </Text>{String(new Date(route.params.Item.requestdate))}
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 12,
+                    lineHeight: 18,
+                    padding: 5,
+                    flexGrow: 1,
+                  }}
+                  >
+                  <Text style={{fontWeight: 'bold'}}>Drop Location : </Text>{`\n Lat : ${route.params.Item.drop.latitude},\n Lon : ${route.params.Item.drop.longitude}`}
                 </Text>
                 <Text
                   style={{
@@ -186,8 +203,7 @@ export default function RequestVolunteer({
                     flexGrow: 1,
                   }}
                   numberOfLines={1}>
-                  <Text style={{fontWeight: 'bold'}}>Location : </Text>Hello
-                  World
+                  <Text style={{fontWeight: 'bold'}}>Color : </Text>{route.params.Item.color}
                 </Text>
                 <Text
                   style={{
@@ -197,18 +213,7 @@ export default function RequestVolunteer({
                     flexGrow: 1,
                   }}
                   numberOfLines={1}>
-                  <Text style={{fontWeight: 'bold'}}>Expires On : </Text>Hello
-                  World
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 12,
-                    lineHeight: 18,
-                    padding: 5,
-                    flexGrow: 1,
-                  }}
-                  numberOfLines={1}>
-                  <Text style={{fontWeight: 'bold'}}>Weight : </Text>Hello World
+                  <Text style={{fontWeight: 'bold'}}>Pickups : </Text>{route.params.Item.pickup.length}
                 </Text>
                 <Text
                   style={{
@@ -217,8 +222,7 @@ export default function RequestVolunteer({
                     padding: 5,
                     flexGrow: 1,
                   }}>
-                  <Text style={{fontWeight: 'bold'}}>Note : </Text>Hello World
-                  Lorem ipsum dolor sit amet consectetur, adipisicing elit.
+                  <Text style={{fontWeight: 'bold'}}>Default Location : </Text>{route.params.Item.defaultlocation}
                 </Text>
               </ScrollView>
             </View>
@@ -244,68 +248,84 @@ export default function RequestVolunteer({
                 overflow: 'hidden',
                 padding: 5,
                 backgroundColor: 'white',
+                height:windowHeight*0.08
               }}
               onPress={() => {
-                if (!requested) {
-                  console.log('Accepted', route.params.username);
-                  database()
-                    .ref(
-                      `/volreq/${route.params.username.trim()}/${
-                        route.params.Item.id
-                      }/status`,
-                    )
-                    .set('Accepted');
-                  database()
-                    .ref(
-                      `/volreq/${route.params.Item.ngo.trim()}/${
-                        route.params.Item.id
-                      }/status`,
-                    )
-                    .set('Accepted');
-                  database()
-                    .ref(
-                      `/notifications/${route.params.Item.ngo.trim()}/${
-                        route.params.Item.id
-                      }`,
-                    )
-                    .set({
-                      id: route.params.Item.id,
-                      name: route.params.Item.name,
-                      time: Date.now(),
-                      msg: `Accepted By ${route.params.username.trim()}`,
-                      status: 'unread',
-                    });
-                } else {
-                  console.log('Cancelled');
-                  database()
-                    .ref(
-                      `/volreq/${route.params.username.trim()}/${
-                        route.params.Item.id
-                      }`,
-                    )
-                    .set(null);
-                  database()
-                    .ref(
-                      `/volreq/${route.params.Item.ngo.trim()}/${
-                        route.params.Item.id
-                      }`,
-                    )
-                    .set(null);
-                  database()
-                    .ref(
-                      `/notifications/${route.params.Item.ngo.trim()}/${
-                        route.params.Item.id
-                      }`,
-                    )
-                    .set({
-                      id: route.params.Item.id,
-                      name: route.params.Item.name,
-                      time: Date.now(),
-                      msg: `Cancelled By ${route.params.username.trim()}`,
-                      status: 'unread',
-                    });
+                try{
+
+                  if (!requested) {
+                    database()
+                      .ref(
+                        `/volreq/${route.params.username.trim()}/${
+                          route.params.Item.id
+                        }/status`,
+                      )
+                      .set('Accepted');
+                    database()
+                      .ref(
+                        `/volreq/${route.params.Item.ngo.trim()}/${
+                          route.params.Item.id
+                        }/status`,
+                      )
+                      .set('Accepted');
+                    database()
+                      .ref(
+                        `/notifications/${route.params.Item.ngo.trim()}/${
+                          route.params.Item.id
+                        }`,
+                      )
+                      .set({
+                        id: route.params.Item.id,
+                        name: route.params.Item.name,
+                        time: Date.now(),
+                        msg: `Accepted By ${route.params.username.trim()}`,
+                        status: 'unread',
+                      });
+                  } else {
+                    database()
+                      .ref(
+                        `/volreq/${route.params.username.trim()}/${
+                          route.params.Item.id
+                        }`,
+                      )
+                      .set(null);
+                    database()
+                      .ref(
+                        `/volreq/${route.params.Item.ngo.trim()}/${
+                          route.params.Item.id
+                        }`,
+                      )
+                      .set(null);
+                    database()
+                      .ref(
+                        `/notifications/${route.params.Item.ngo.trim()}/${
+                          route.params.Item.id
+                        }`,
+                      )
+                      .set({
+                        id: route.params.Item.id,
+                        name: route.params.Item.name,
+                        time: Date.now(),
+                        msg: `Cancelled By ${route.params.username.trim()}`,
+                        status: 'unread',
+                      });
+
+                      route.params.Item.pickup.forEach((value: any, index: any) => {
+
+                        database()
+                        .ref(`/delivery/${value.donor.trim()}/${value.id}`)
+                        .set(null);
+
+                        database().ref(`/requests/${value.donor.trim()}/${value.id}/status`).set('Accepted')
+                        database().ref(`/requests/${route.params.Item.ngo.trim()}/${value.id}/status`).set('Accepted')
+                      })
+                      navigation.navigate('Home',{...route.params});
+                  }
+                  setRequested(!requested);
                 }
-                setRequested(!requested);
+                catch(err){
+
+                }
               }}>
               <View style={{flexGrow: 1, padding: 5}}>
                 <Image
@@ -314,6 +334,8 @@ export default function RequestVolunteer({
                       ? require('./assets/cancel.png')
                       : require('./assets/request.png')
                   }
+                  resizeMode='contain'
+                    style={{width:"80%"}}
                 />
               </View>
               <Text style={{flexGrow: 1, textAlign: 'center'}}>

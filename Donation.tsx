@@ -29,7 +29,7 @@ const windowHeight = Dimensions.get('window').height;
 const windowWidth = Dimensions.get('window').width;
 const LinearColor: string[] = ['#FF07E6', '#13D7E3'];
 let idWithDate: Number = Date.now();
-const data = ['Veg', 'Non-Veg', 'Pulses', 'Fruits', 'Vegetables'];
+const imageType = ['Veg', 'Non-Veg', 'Pulses', 'Fruits', 'Vegetables'];
 
 export default function DonationScreen({
   navigation,
@@ -110,7 +110,7 @@ export default function DonationScreen({
           <Select
             label="Type of Food"
             style={{width: '100%'}}
-            value={data[Number(type.toString()) - 1]}
+            value={imageType[Number(type.toString()) - 1]}
             selectedIndex={type}
             onSelect={index => setType(index)}>
             <SelectItem title="Veg" />
@@ -158,10 +158,9 @@ export default function DonationScreen({
               disabled={disable}
               onPress={() => {
                 setDisable(true);
-                console.log(type);
                 if (
-                  name &&
-                  date &&
+                  name && name != "Volunteer Message" &&
+                  date && type &&
                   new Date(date.toISOString().split('T')[0]).getTime() >
                     new Date(
                       new Date().toISOString().split('T')[0],
@@ -188,10 +187,10 @@ export default function DonationScreen({
                             .set({
                               id: idWithDate,
                               name: name,
-                              type: data[Number(type.toString()) - 1],
+                              type: imageType[Number(type.toString()) - 1],
                               donor: route.params.username.trim(),
                               location: route.params.region,
-                              expiry: date.getMilliseconds(),
+                              expiry: date,
                               date: Date.now(),
                               weight: weight,
                               note: note,
@@ -206,7 +205,7 @@ export default function DonationScreen({
                         } else {
                           setDisable(false);
                           Alert.alert(
-                            'Operation Succesful!',
+                            'Operation unsuccessful!',
                             'Food Name Already Exists!',
                           );
                         }
@@ -218,24 +217,28 @@ export default function DonationScreen({
                           .set({
                             id: idWithDate,
                             name: name,
-                            type: data[Number(type.toString()) - 1],
+                            type: imageType[Number(type.toString()) - 1],
                             donor: route.params.username.trim(),
                             location: route.params.region,
-                            expiry: date.getMilliseconds(),
+                            expiry: date,
                             date: Date.now(),
                             weight: weight,
                             note: note,
                           })
                           .then(() => {
                             setDisable(false);
+                            Alert.alert(
+                              'Successfully Submitted',
+                              `Your Donation ${name} is included.`,
+                            );
                           });
                       }
                     });
                 } else {
-                  console.error('Incorrect Input!');
-                  Alert.alert('Unsuccesful!', 'Incorrect Input! Try again');
+                  Alert.alert('Unsuccessful!', 'Incorrect Input! Try again');
                   setDisable(false);
                 }
+                setType(new IndexPath(0))
               }}>
               <Animated.Text>Submit</Animated.Text>
             </Button>

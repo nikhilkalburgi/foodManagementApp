@@ -40,7 +40,6 @@ function AppStack(props: any) {
       if (session !== undefined && session != null) {
         // Congrats! You've just retrieved your first value!
         session = JSON.parse(session || '');
-        console.log(session);
         database()
           .ref(`/users/${session.username.trim()}`)
           .once('value')
@@ -69,7 +68,7 @@ function AppStack(props: any) {
   retrieveUserSession();
   return !appState ? (
     <Stack.Navigator
-      screenOptions={{headerShown: false, animation: 'slide_from_bottom'}}
+      screenOptions={{headerShown: false, animation: 'slide_from_bottom', orientation:'portrait'}}
       initialRouteName={initialPage}>
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Home" component={HomeScreen} initialParams={params} />

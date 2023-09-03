@@ -52,17 +52,21 @@ export default function DonorNGODetails({
                 alignItems: 'center',
                 marginTop: 20,
               }}>
-              <Image
-                source={require('./assets/donor.png')}
+              <View
                 style={{
                   borderRadius: 100,
                   borderWidth: 3,
                   borderColor: 'black',
-                  width: windowWidth * 0.3,
-                  height: windowWidth * 0.3,
-                  marginBottom: 10,
-                }}
-              />
+                  width: windowWidth * 0.25,
+                  height: windowWidth * 0.25,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  backgroundColor: 'white',
+                }}>
+                <Text style={{fontSize: 50, color: 'black'}}>
+                  {route.params.Item.name[0].toUpperCase()}
+                </Text>
+              </View>
               <Text numberOfLines={2} style={{fontSize: 25, color: 'black'}}>
                 {route.params.Item.name}
               </Text>

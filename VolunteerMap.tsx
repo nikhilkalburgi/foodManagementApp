@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Alert,
   BackHandler,
   Dimensions,
   FlatList,
@@ -18,6 +19,30 @@ import {Button, Spinner} from '@ui-kitten/components';
 
 const windowHeight = Dimensions.get('window').height;
 const windowWidth = Dimensions.get('window').width;
+let updateLocToggle = true;
+
+let UpdateLoc = (route:any,region:any)=>{
+  setInterval(() => {
+      Geolocation.getCurrentPosition(
+        position => {
+          console.log("volunteerMap")
+          database()
+            .ref(`/delivery/${route.params.username.trim()}/geo`)
+            .set({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              latitudeDelta: region.latitudeDelta,
+              longitudeDelta: region.longitudeDelta,
+            });
+        },
+        error => {
+          // See error code charts below.
+          Alert.alert("Error!", error.message);
+        },
+        {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
+      );
+    }, 50000);
+}
 
 // Function to get permission for location
 const requestLocationPermission = async () => {
@@ -32,18 +57,18 @@ const requestLocationPermission = async () => {
         buttonPositive: 'OK',
       },
     );
-    console.log('granted', granted);
     if (granted === 'granted') {
       console.log('You can use Geolocation');
       return true;
     } else {
-      console.log('You cannot use Geolocation');
+      Alert.alert('You cannot use Geolocation');
       return false;
     }
   } catch (err) {
     return false;
   }
 };
+
 
 export default function VolunteerMap({
   navigation,
@@ -55,27 +80,8 @@ export default function VolunteerMap({
   const getLocation = (region: any, setRegion: any, setShowMap: any) => {
     const result = requestLocationPermission();
     result.then(res => {
-      console.log('res is:', res);
       if (res) {
-        setInterval(() => {
-          Geolocation.getCurrentPosition(
-            position => {
-              database()
-                .ref(`/delivery/${route.params.username.trim()}/geo`)
-                .set({
-                  latitude: position.coords.latitude,
-                  longitude: position.coords.longitude,
-                  latitudeDelta: region.latitudeDelta,
-                  longitudeDelta: region.longitudeDelta,
-                });
-            },
-            error => {
-              // See error code charts below.
-              console.log(error.code, error.message);
-            },
-            {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
-          );
-        }, 10000);
+       
         Geolocation.getCurrentPosition(
           position => {
             setRegion({
@@ -84,12 +90,11 @@ export default function VolunteerMap({
               latitudeDelta: region.latitudeDelta,
               longitudeDelta: region.longitudeDelta,
             });
-            console.log('true');
             setShowMap(true);
           },
           error => {
             // See error code charts below.
-            console.log(error.code, error.message);
+            Alert.alert("Error!", error.message);
 
             setShowMap(true);
           },
@@ -107,59 +112,121 @@ export default function VolunteerMap({
   });
 
   const [showMap, setShowMap] = React.useState(false);
-  const [modalVisible, setModalVisible] = React.useState(false);
   const [items, setItems]: any = React.useState([]);
-  const [pickup, setPickup]: any = React.useState([]);
 
   React.useEffect(() => {
-    getLocation(region, setRegion, setShowMap);
-    database()
-      .ref(`volreq/${route.params.username.trim()}`)
-      .once('value', snapshot => {
-        let data = snapshot.val();
-        if (data) {
-          let array: any[] = [];
-          data = Object.values(data);
-          data.forEach((val: any) => {
-            if (val.pickup) {
-              val.pickup.sort(
-                (a: any, b: any) =>
-                  Math.abs(a.location.latitude - region.latitude) +
-                  Math.abs(a.location.longitude - region.longitude),
-              );
-              val.pickup.forEach((value: any) => {
-                if (value.location.latitude && value.location.longitude)
-                  array.push({
-                    region: value.location,
-                    title: {type: 'Donor', name: value.donor},
-                    mobile: value.mobile,
-                    id: value.id,
+    try{
+
+      if(updateLocToggle){
+        updateLocToggle = !updateLocToggle;
+        UpdateLoc(route,region);
+      }
+      getLocation(region, setRegion, setShowMap);
+      database()
+        .ref(`volreq/${route.params.username.trim()}`)
+        .once('value', snapshot => {
+          let data = snapshot.val();
+          if (data) {
+            let array: any[] = [];
+            data = Object.values(data);
+            data.forEach((val: any) => {
+              if(val.status == 'InProgress'){
+  
+                if (val.pickup) {
+                  val.pickup.sort(
+                    (a: any, b: any) =>
+                      Math.abs(a.location.latitude - region.latitude) +
+                      Math.abs(a.location.longitude - region.longitude),
+                  );
+                  val.pickup.forEach((value: any) => {
+                    if (value.location.latitude && value.location.longitude)
+                      array.push({
+                        region: value.location,
+                        title: {type: 'Donor', name: value.donor},
+                        mobile: value.mobile,
+                        id: value.id,
+                        color:val.color
+                      });
                   });
-              });
-            }
-            array.push({
-              region: val.drop,
-              title: {type: 'NGO', name: val.ngo},
-              mobile: val.mobile,
-              id: val.id,
+                }
+                array.push({
+                  region: val.drop,
+                  title: {type: 'NGO', name: val.ngo},
+                  mobile: val.mobile,
+                  id: val.id,
+                  color:val.color
+                });
+              }
             });
-          });
-          if (array.length) setItems(array);
-        }
-      });
+            if (array.length){
+              setItems(array);
+              setShowMap(false)
+              setShowMap(true)
+            } 
+          }
+        });
+  
+        database()
+        .ref(`volreq/${route.params.username.trim()}`)
+        .on('value', snapshot => {
+          let data = snapshot.val();
+          if (data) {
+            let array: any[] = [];
+            data = Object.values(data);
+            data.forEach((val: any) => {
+              if(val.status == 'InProgress'){
+  
+                if (val.pickup) {
+                  val.pickup.sort(
+                    (a: any, b: any) =>
+                      Math.abs(a.location.latitude - region.latitude) +
+                      Math.abs(a.location.longitude - region.longitude),
+                  );
+                  val.pickup.forEach((value: any) => {
+                    if (value.location.latitude && value.location.longitude)
+                      array.push({
+                        region: value.location,
+                        title: {type: 'Donor', name: value.donor},
+                        mobile: value.mobile,
+                        id: value.id,
+                        color:val.color
+                      });
+                  });
+                }
+                array.push({
+                  region: val.drop,
+                  title: {type: 'NGO', name: val.ngo},
+                  mobile: val.mobile,
+                  id: val.id,
+                  color:val.color
+                });
+              }
+            });
+            if (array.length){
+              setItems(array);
+              setShowMap(false)
+              setShowMap(true)
+            } 
+          }
+        });
+    }
+    catch(err){
+
+    }
   }, []);
 
   let mapMarkers = () => {
-    console.log('iiiiiii', items);
-    return items.map((report: any, index: number) => (
-      <Marker
-        key={index}
-        coordinate={report.region}
-        title={report.title.name}
-        description={
-          report.mobile ? `Mobile : ${report.mobile}` : `${index}`
-        }></Marker>
-    ));
+    return items.map((report: any, index: number) => {
+      console.log(report.color)
+      return <Marker
+      key={index}
+      coordinate={report.region}
+      title={`${report.title.type} : ${report.title.name}`}
+      pinColor={`${report.color}`}
+      description={
+        report.mobile ? `Mobile : ${report.mobile}` : `${index+1}`
+      }></Marker>
+    });
   };
 
   return showMap ? (
@@ -231,43 +298,48 @@ export default function VolunteerMap({
             overflow: 'hidden',
           }}
           onLongPress={() => {
-            if (items[0].title.type == 'Donor') {
-              database()
+            try{
+
+              if (items[0].title.type == 'Donor') {
+                database()
                 .ref(`/requests/${items[0].title.name.trim()}/${items[0].id}`)
                 .once('value', snapshot => {
                   let data = snapshot.val();
                   if (data) {
-                    console.log(data);
-                    database()
-                      .ref(
-                        `/requests/${items[0].title.name.trim()}/${
-                          items[0].id
-                        }/status`,
-                      )
-                      .set('Completed');
-                    database()
-                      .ref(`/requests/${data.ngo.trim()}/${data.id}/status`)
-                      .set('Completed');
-                  }
-                });
-            } else if (items[0].title.type == 'NGO') {
-              database()
-                .ref(
-                  `/volreq/${items[0].title.name.trim()}/${items[0].id}/status`,
-                )
-                .set('Completed');
-              database()
-                .ref(
-                  `/volreq/${route.params.username.trim()}/${
-                    items[0].id
-                  }/status`,
-                )
-                .set('Completed');
+                      database()
+                        .ref(
+                          `/requests/${data.donor}/${
+                            data.id
+                          }/status`,
+                        )
+                        .set('Completed');
+                      database()
+                        .ref(`/requests/${data.ngo.trim()}/${data.id}/status`)
+                        .set('Completed');
+                    }
+                  });
+              } else if (items[0].title.type == 'NGO') {
+                database()
+                  .ref(
+                    `/volreq/${items[0].title.name.trim()}/${items[0].id}/status`,
+                  )
+                  .set('Completed');
+                database()
+                  .ref(
+                    `/volreq/${route.params.username.trim()}/${
+                      items[0].id
+                    }/status`,
+                  )
+                  .set('Completed');
+              }
+              items.shift();
+              setItems(items);
+              setShowMap(false);
+              setShowMap(true);
             }
-            items.shift();
-            setItems(items);
-            setShowMap(false);
-            setShowMap(true);
+            catch(err){
+              console.log(err)
+            }
           }}>
           <View
             style={{
@@ -279,8 +351,8 @@ export default function VolunteerMap({
               alignItems: 'center',
               paddingBottom: 5,
               borderRadius: 100,
-              elevation: 3,
-              backgroundColor: 'white',
+              backgroundColor: items[0].color,
+              opacity:0.7
             }}>
             <Text style={{fontSize: 40, color: 'black'}}>{`${
               items.length ? items[0].title.type[0] : ''
@@ -297,42 +369,49 @@ export default function VolunteerMap({
                 }}>
                 Donor
               </Text>
-              <Button
-                style={{backgroundColor: 'black', borderWidth: 0}}
+              <TouchableOpacity
+
+                style={{backgroundColor: 'black', borderWidth: 0, borderRadius:5, padding:10}}
                 onPress={() => {
-                  console.log(`Notify to ${items[0].title.name}`);
-                  if (items[0].title.type == 'Donor') {
-                    database()
-                      .ref(
-                        `/notifications/${items[0].title.name.trim()}/${
-                          items[0].id
-                        }`,
-                      )
-                      .set({
-                        id: items[0].id,
-                        name: 'Delivery',
-                        time: Date.now(),
-                        msg: `Volunteer ${route.params.username} has reached your location.`,
-                        status: 'unread',
-                      });
-                  } else if (items[0].title.type == 'NGO') {
-                    database()
-                      .ref(
-                        `/notifications/${items[0].title.name.trim()}/${
-                          items[0].id
-                        }`,
-                      )
-                      .set({
-                        id: items[0].id,
-                        name: 'Delivery',
-                        time: Date.now(),
-                        msg: `Volunteer ${route.params.username} has reached your location.`,
-                        status: 'unread',
-                      });
+                  try{
+
+                    if (items[0].title.type == 'Donor') {
+                      database()
+                        .ref(
+                          `/notifications/${items[0].title.name.trim()}/${
+                            items[0].id
+                          }`,
+                        )
+                        .set({
+                          id: items[0].id,
+                          name: 'Volunteer Message',
+                          time: Date.now(),
+                          msg: `Volunteer ${route.params.username} has reached your location.`,
+                          status: 'unread',
+                        });
+                    } else if (items[0].title.type == 'NGO') {
+                      database()
+                        .ref(
+                          `/notifications/${items[0].title.name.trim()}/${
+                            items[0].id
+                          }`,
+                        )
+                        .set({
+                          id: items[0].id,
+                          name: 'Volunteer Message',
+                          time: Date.now(),
+                          msg: `Volunteer ${route.params.username} has reached your location.`,
+                          status: 'unread',
+                        });
+                    }
+                    Alert.alert("Notification Sent Successfully!",`${items[0].title.type} has received the message.`)
+                  }
+                  catch(err){
+
                   }
                 }}>
-                Notify
-              </Button>
+                <Text style={{color:"white"}}>Notify</Text>
+              </TouchableOpacity>
             </View>
             <View style={styles.CardBody}>
               <View style={styles.CardBodyTitle}>

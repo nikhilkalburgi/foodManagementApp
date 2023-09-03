@@ -172,85 +172,92 @@ export default function RequestDonor({
             {
               <TouchableOpacity
                 onPress={() => {
-                  if (!requested) {
-                    console.log('Accepted', route.params.username);
-                    database()
-                      .ref(
-                        `/requests/${route.params.username.trim()}/${
-                          route.params.Item.id
-                        }`,
-                      )
-                      .set({
-                        ...route.params.Item,
-                        status: 'Accepted',
-                        ngo: route.params.username.trim(),
-                        requestdate: Date.now(),
-                      });
-                    database()
-                      .ref(
-                        `/requests/${route.params.Item.ngo.trim()}/${
-                          route.params.Item.id
-                        }`,
-                      )
-                      .set({
-                        ...route.params.Item,
-                        status: 'Accepted',
-                        ngo: route.params.username.trim(),
-                        mobile: route.params.user.mobile,
-                        defaultlocation: route.params.user.location,
-                        requestdate: Date.now(),
-                      });
-                    database()
-                      .ref(
-                        `/notifications/${route.params.Item.ngo.trim()}/${
-                          route.params.Item.id
-                        }`,
-                      )
-                      .set({
-                        id: route.params.Item.id,
-                        name: route.params.Item.name,
-                        time: Date.now(),
-                        msg: `Accepted By ${route.params.username.trim()}`,
-                        status: 'unread',
-                      });
-                  } else {
-                    console.log('Cancelled');
-                    database()
-                      .ref(
-                        `/requests/${route.params.username.trim()}/${
-                          route.params.Item.id
-                        }`,
-                      )
-                      .set(null);
-                    database()
-                      .ref(
-                        `/requests/${route.params.Item.ngo.trim()}/${
-                          route.params.Item.id
-                        }`,
-                      )
-                      .set(null);
-                    database()
-                      .ref(
-                        `/notifications/${route.params.Item.ngo.trim()}/${
-                          route.params.Item.id
-                        }`,
-                      )
-                      .set({
-                        id: route.params.Item.id,
-                        name: route.params.Item.name,
-                        time: Date.now(),
-                        msg: `Cancelled By ${route.params.username.trim()}`,
-                        status: 'unread',
-                      });
-                    database()
-                      .ref(
-                        `/donations/${route.params.Item.donor.trim()}/${
-                          route.params.Item.id
-                        }`,
-                      )
-                      .set(route.params.Item);
+                  try{
+
+                    if (!requested) {
+                      database()
+                        .ref(
+                          `/requests/${route.params.username.trim()}/${
+                            route.params.Item.id
+                          }/status`,
+                        )
+                        .set('Accepted');
+                      database()
+                        .ref(
+                          `/requests/${route.params.Item.ngo.trim()}/${
+                            route.params.Item.id
+                          }/status`,
+                        )
+                        .set("Accepted");
+                      database()
+                        .ref(
+                          `/notifications/${route.params.Item.ngo.trim()}/${
+                            route.params.Item.id
+                          }`,
+                        )
+                        .set({
+                          id: route.params.Item.id,
+                          name: route.params.Item.name,
+                          time: Date.now(),
+                          msg: `Accepted By ${route.params.username.trim()}`,
+                          status: 'unread',
+                        });
+                    } else {
+                      database()
+                        .ref(
+                          `/requests/${route.params.username.trim()}/${
+                            route.params.Item.id
+                          }/status`,
+                        )
+                        .set("Requested");
+                      database()
+                        .ref(
+                          `/requests/${route.params.Item.ngo.trim()}/${
+                            route.params.Item.id
+                          }/status`,
+                        )
+                        .set("Requested");
+                      database()
+                        .ref(
+                          `/notifications/${route.params.Item.ngo.trim()}/${
+                            route.params.Item.id
+                          }`,
+                        )
+                        .set({
+                          id: route.params.Item.id,
+                          name: route.params.Item.name,
+                          time: Date.now(),
+                          msg: `Cancelled By ${route.params.username.trim()}`,
+                          status: 'unread',
+                        });
+                     
+
+                        database().ref(`/volreq/${route.params.Item.ngo.trim()}`).once('value',(snapshot)=>{
+                          if(snapshot.val()){
+                            let d1 = Object.values(snapshot.val());
+                            d1.forEach((value:any)=>{
+                              if(value.pickup.length == 1){
+                                database().ref(`/volreq/${route.params.Item.ngo.trim()}/${value.id}`).set(null)
+                                database().ref(`/volreq/${value.name.trim()}/${value.id}`).set(null)
+                              }
+                              else{
+                                value.pickup.forEach((d2:any,index:any)=>{
+                                  if(d2.id == route.params.Item.id){
+                                    database().ref(`/volreq/${route.params.Item.ngo.trim()}/${value.id}/pickup/${index}`).set(null)
+                                    database().ref(`/volreq/${value.name.trim()}/${value.id}/pickup/${index}`).set(null)
+                                  }
+                                })
+                              }
+                            })
+
+                          }
+                        })
+                    }
+                    setRequested(!requested);
                   }
-                  setRequested(!requested);
+                  catch(err){
+                    console.log(err)
+                  }
                 }}
                 style={{
                   borderWidth: 2,
@@ -262,6 +269,7 @@ export default function RequestDonor({
                   overflow: 'hidden',
                   padding: 5,
                   backgroundColor: 'white',
+                  height:windowHeight*0.08
                 }}>
                 <View style={{flexGrow: 1, padding: 5}}>
                   <Image
@@ -270,6 +278,8 @@ export default function RequestDonor({
                         ? require('./assets/cancel.png')
                         : require('./assets/request.png')
                     }
+                    resizeMode='contain'
+                    style={{width:"80%"}}
                   />
                 </View>
                 <Text style={{flexGrow: 1, textAlign: 'center'}}>

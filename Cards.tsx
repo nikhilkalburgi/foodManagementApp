@@ -7,6 +7,7 @@ import {
   Image,
   FlatList,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import DropShadow from 'react-native-drop-shadow';
 import database from '@react-native-firebase/database';
@@ -34,9 +35,9 @@ const images: any = {
   },
 };
 
+
 const Donations = (props: any): JSX.Element => {
   date = String(new Date(props.Item.date).toLocaleString());
-  console.log(props.Item);
   return (
     <DropShadow
       style={{
@@ -208,13 +209,13 @@ const RequestVolunteer = (props: any): JSX.Element => {
             paddingBottom: 5,
           }}>
           <Text style={{fontSize: 50, color: 'black'}}>
-            {props.Item.name[0].toUpperCase()}
+            {props.Item.ngo[0].toUpperCase()}
           </Text>
         </View>
         <View style={{width: '70%'}}>
           <View style={slide.CardBody}>
             <View style={slide.CardBodyTitle}>
-              <Text style={{fontWeight: 'bold'}}>{props.Item.name}</Text>
+              <Text style={{fontWeight: 'bold'}}>{props.Item.ngo}</Text>
             </View>
             <View style={slide.CardBodyContent}>
               <Text style={{fontSize: 10, lineHeight: 18}} numberOfLines={1}>
@@ -223,7 +224,7 @@ const RequestVolunteer = (props: any): JSX.Element => {
               </Text>
               <Text style={{fontSize: 10, lineHeight: 18}} numberOfLines={1}>
                 <Text style={{fontWeight: 'bold'}}>Location : </Text>
-                {props.Item.mobile}
+                {`${props.Item.drop.latitude}, ${props.Item.drop.longitude}`}
               </Text>
             </View>
           </View>
@@ -348,13 +349,26 @@ const Donors = (props: any): JSX.Element => {
 
 const Volunteers = (props: any): JSX.Element => {
   const [requested, setRequested] = React.useState(false);
-
+  
   database()
     .ref(`/volreq/${props.username.trim()}/${props.Item.id}/status`)
     .once('value', snapshot => {
-      if (snapshot.val() == 'Requested' || snapshot.val() == 'Accepted')
+      if ((snapshot.val() == 'Requested' || snapshot.val() == 'Accepted'))
         setRequested(true);
+      else{
+        setRequested(false);
+      }
     });
+    database()
+    .ref(`/volreq/${props.username.trim()}/${props.Item.id}/status`)
+    .on('value', snapshot => {
+      if ((snapshot.val() == 'Requested' || snapshot.val() == 'Accepted'))
+        setRequested(true);
+      else{
+        setRequested(false);
+      }
+    });
+
   return (
     <DropShadow
       style={{
@@ -380,38 +394,49 @@ const Volunteers = (props: any): JSX.Element => {
             backgroundColor: 'white',
           }}
           onPress={() => {
-            if (!requested) {
-              setRequested(!requested);
-              props.navigation.navigate('Location', {
-                userType: props.userType,
-                props: {
-                  username: props.username,
-                  password: props.password,
-                  user: props.user,
-                  Item: props.Item,
-                  place: props.place,
-                },
-              });
-              console.log('Requested', props.username);
-            } else {
-              setRequested(!requested);
-              console.log('Cancelled');
-              database()
-                .ref(
-                  `/notifications/${props.Item.name.trim()}/${props.Item.id}`,
-                )
-                .set({
-                  id: props.Item.id,
-                  name: props.Item.name,
-                  time: Date.now(),
-                  msg: `Cancelled By ${props.username.trim()},status:'unread'`,
-                });
-              database()
-                .ref(`/volreq/${props.username.trim()}/${props.Item.id}`)
-                .set(null);
-              database()
-                .ref(`/volreq/${props.Item.name.trim()}/${props.Item.id}`)
-                .set(null);
+            try{
+              
+              database().ref(`/volreq/${props.username.trim()}/${props.Item.id}`).once('value',(snapshot)=>{
+                let data = snapshot.val()
+                if(data && data.status == 'InProgress' ){
+                  Alert.alert("Not Possible!",`This Volunteer is already in your list with ${data.status} status`);
+                }else{
+                  
+                  if (!requested) {
+                    props.navigation.navigate('Location', {
+                      userType: props.userType,
+                      props: {
+                        username: props.username,
+                        password: props.password,
+                        user: props.user,
+                        Item: props.Item,
+                        place: props.place,
+                      },
+                    });
+                  } else {
+                    database()
+                      .ref(
+                        `/notifications/${props.Item.name.trim()}/${props.Item.id}`,
+                      )
+                      .set({
+                        id: props.Item.id,
+                        name: props.username,
+                        time: Date.now(),
+                        msg: `Cancelled By ${props.username.trim()},status:'unread'`,
+                      });
+                    database()
+                      .ref(`/volreq/${props.username.trim()}/${props.Item.id}`)
+                      .set(null);
+                    database()
+                      .ref(`/volreq/${props.Item.name.trim()}/${props.Item.id}`)
+                      .set(null);
+                  }
+                }
+              })
+
+            }
+            catch(err){
+            console.log(err)
             }
           }}>
           <Text style={{flexGrow: 1, textAlign: 'center'}}>
@@ -617,7 +642,6 @@ const Card = (props: any): JSX.Element => {
         />
       );
     } else if (props.userType == 'Volunteer') {
-      console.log('hell');
       element = (
         <RequestVolunteer
           Item={props.Item}
@@ -724,3 +748,4 @@ const slide = StyleSheet.create({
     flexGrow: 1,
   },
 });
+

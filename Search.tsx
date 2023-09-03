@@ -31,7 +31,7 @@ const Option = (props: any): JSX.Element => {
         style={search.Card}
         onTouchEnd={() => {
           props.Item.role
-            ? props.navigation.navigate('DonorDetails', {
+            ? props.navigation.navigate('DonorNGODetails', {
                 userType: props.userType,
                 slideName: 'Search',
                 Item: props.Item,
@@ -40,7 +40,7 @@ const Option = (props: any): JSX.Element => {
                 place: props.place,
                 user: props.user,
               })
-            : props.navigation.navigate('DonationNGODetails', {
+            : props.navigation.navigate('DonationDetails', {
                 userType: props.userType,
                 slideName: 'Search',
                 Item: props.Item,
@@ -236,7 +236,6 @@ export default function SearchScreen({
   }, []);
 
   React.useEffect(() => {
-    console.log(searchItem);
     let list = items_1.concat(items_2);
     let data: any = [];
     list.forEach((value: any) => {
@@ -268,7 +267,7 @@ export default function SearchScreen({
       <View style={search.view_2}>
         <TextInput
           onChangeText={value => setSearchItem(value)}
-          inlineImageLeft="username"
+          inlineImageLeft="search"
           inlineImagePadding={50}
           style={search.Input}
           placeholder="Search NGO, Food Name, Volunteer etc... "

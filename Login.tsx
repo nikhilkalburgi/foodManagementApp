@@ -220,6 +220,7 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
                   ...login.OptionIcon,
                   borderRadius: confirmPassword.toggle ? 100 : 5,
                   borderWidth: 1,
+                  paddingRight:3
                 }}
                 onTouchStart={() => {
                   if (confirmPassword.toggle) {
@@ -238,7 +239,7 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
                 }}>
                 <Image
                   source={require('./assets/donor.png')}
-                  style={{width: '70%'}}
+                  style={{width: '50%'}}
                   resizeMode="contain"
                 />
               </View>
@@ -278,7 +279,7 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
                 }}>
                 <Image
                   source={require('./assets/volunteer.png')}
-                  style={{width: '70%'}}
+                  style={{width: '50%'}}
                   resizeMode="contain"
                 />
               </View>
@@ -318,7 +319,7 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
                 }}>
                 <Image
                   source={require('./assets/ngo.png')}
-                  style={{width: '70%'}}
+                  style={{width: '60%'}}
                   resizeMode="contain"
                 />
               </View>
@@ -393,26 +394,26 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
                             } else {
                               setLoginBtndisable(false);
                               if (!user) {
-                                Alert.alert('Successfull!', 'Please Sign Up');
+                                Alert.alert('Unsuccessfull!', 'Please Sign Up');
                                 return;
                               }
                               if (user.password !== password) {
-                                Alert.alert('Successfull!', 'Invalid Password');
+                                Alert.alert('Unsuccessfull!', 'Invalid Password');
                               } else if (
                                 user.role.split('').indexOf(currentRole) == -1
                               ) {
-                                Alert.alert('Successfull!', 'Invalid role');
+                                Alert.alert('Unsuccessfull!', 'Invalid role');
                               } else {
-                                Alert.alert('Successfull!', 'Please Sign Up');
+                                Alert.alert('Unsuccessfull!', 'Please Sign Up');
                               }
                             }
                           });
                       } else {
-                        Alert.alert('Successfull!', 'Invalid Input');
+                        Alert.alert('Unsuccessfull!', 'Invalid Input');
                         setLoginBtndisable(false);
                       }
                     } else {
-                      Alert.alert('Successfull!', 'Incomplete Input');
+                      Alert.alert('Unsuccessfull!', 'Incomplete Input');
                       setLoginBtndisable(false);
                     }
                   } else {
@@ -526,25 +527,25 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
                                     setLoginBtndisable(false);
                                   });
                               } else {
-                                Alert.alert('Successfull!', 'Username Exists');
+                                Alert.alert('Unsuccessfull!', 'Username Exists');
                                 setLoginBtndisable(false);
                               }
                             });
                         } else {
-                          Alert.alert('Successfull!', 'password != cp');
+                          Alert.alert('Unsuccessfull!', 'password != confirm passpord');
                           setLoginBtndisable(false);
                         }
                       } else {
-                        Alert.alert('Successfull!', 'Invalid Input');
+                        Alert.alert('Unsuccessfull!', 'Invalid Input');
                         setLoginBtndisable(false);
                       }
                     } else {
-                      Alert.alert('Successfull!', 'Incomplete Input');
+                      Alert.alert('Unsuccessfull!', 'Incomplete Input');
                       setLoginBtndisable(false);
                     }
                   }
                 } catch {
-                  Alert.alert('Successfull!', 'Unexpected Error Occured!');
+                  Alert.alert('Unsuccessfull!', 'Unexpected Error Occured!');
                 }
               }}>
               <Animated.Text

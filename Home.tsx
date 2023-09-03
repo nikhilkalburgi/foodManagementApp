@@ -46,466 +46,494 @@ export default function HomeScreen({
     [navigation],
   );
 
-  console.log('----------->', route.params);
   React.useEffect(() => {
-    database()
-      .ref(`/notifications/${route.params.username}`)
-      .on('value', snapshot => {
-        if (snapshot.val()) {
-          let data: object[] = Object.values(snapshot.val());
-          if (
-            data.some((value: any) => {
-              if (value.status == 'unread') return true;
-            })
-          )
-            setDot('flex');
-        }
-      });
+    try{
 
-    if (route.params.place.donor) {
-      setUserType('Donor');
-      setItems([
-        {id: 1, name: 'Donations'},
-        {id: 2, name: 'NGO'},
-      ]);
-      setTab({
-        topBar: (
-          <View style={home.TopBar}>
-            <View style={home.TopBar_v1}>
-              <View style={{justifyContent: 'center', alignItems: 'center'}}>
-                <Text
-                  style={{color: 'black', textAlign: 'center'}}
-                  onPress={() => {
-                    Flatlist.current?.scrollToIndex({
-                      animated: true,
-                      index: 0,
-                    });
-                  }}>
-                  My Donations
-                </Text>
+      database()
+        .ref(`/notifications/${route.params.username}`)
+        .on('value', snapshot => {
+          if (snapshot.val()) {
+            let data: object[] = Object.values(snapshot.val());
+            if (
+              data.some((value: any) => {
+                if (value.status == 'unread') return true;
+              })
+            )
+              setDot('flex');
+          }
+        });
+        database()
+        .ref(`/notifications/${route.params.username}`)
+        .once('value', snapshot => {
+          if (snapshot.val()) {
+            let data: object[] = Object.values(snapshot.val());
+            if (
+              data.some((value: any) => {
+                if (value.status == 'unread') return true;
+              })
+            )
+              setDot('flex');
+          }
+        });
+  
+      if (route.params.place.donor) {
+        setUserType('Donor');
+        setItems([
+          {id: 1, name: 'Donations'},
+          {id: 2, name: 'NGO'},
+        ]);
+        setTab({
+          topBar: (
+            <View style={home.TopBar}>
+              <View style={home.TopBar_v1}>
+                <View style={{justifyContent: 'center', alignItems: 'center'}}>
+                  <Text
+                    style={{color: 'black', textAlign: 'center'}}
+                    onPress={() => {
+                      Flatlist.current?.scrollToIndex({
+                        animated: true,
+                        index: 0,
+                      });
+                    }}>
+                    My Donations
+                  </Text>
+                </View>
+                <View>
+                  <Text
+                    style={{color: 'black', textAlign: 'center'}}
+                    onPress={() => {
+                      Flatlist.current?.scrollToIndex({
+                        animated: true,
+                        index: 1,
+                      });
+                    }}>
+                    NGO
+                  </Text>
+                </View>
               </View>
-              <View>
-                <Text
-                  style={{color: 'black', textAlign: 'center'}}
-                  onPress={() => {
-                    Flatlist.current?.scrollToIndex({
-                      animated: true,
-                      index: 1,
-                    });
+              <View style={home.TopBar_v2}>
+                <Animated.View
+                  style={{
+                    width: '48%',
+                    position: 'relative',
+                    left: selectedIndex,
                   }}>
-                  NGO
-                </Text>
+                  <LinearGradient
+                    start={{x: 0, y: 0}}
+                    end={{x: 1, y: 0}}
+                    colors={LinearColor}
+                    style={{
+                      padding: 2,
+                      borderRadius: 5,
+                      width: '100%',
+                    }}></LinearGradient>
+                </Animated.View>
               </View>
             </View>
-            <View style={home.TopBar_v2}>
-              <Animated.View
-                style={{
-                  width: '48%',
-                  position: 'relative',
-                  left: selectedIndex,
-                }}>
-                <LinearGradient
-                  start={{x: 0, y: 0}}
-                  end={{x: 1, y: 0}}
-                  colors={LinearColor}
-                  style={{
-                    padding: 2,
-                    borderRadius: 5,
-                    width: '100%',
-                  }}></LinearGradient>
-              </Animated.View>
-            </View>
-          </View>
-        ),
-        bottomBar: (
-          <>
-            <DropShadow
-              style={{
-                shadowColor: '#ddd',
-                shadowOffset: {width: 0, height: -5},
-                shadowOpacity: 0.6,
-                shadowRadius: 6,
-              }}>
-              <View style={home.BottomBar_v1}>
-                <TouchableOpacity
-                  style={{
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    paddingVertical: 2,
-                  }}>
-                  <Image source={require('./assets/bank.png')} />
-                  <Text>Bank</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={{
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    paddingVertical: 2,
-                  }}
-                  onPress={() => {
-                    navigation.navigate('VolunteerDonor', {
-                      userType: 'Donor',
-                      username: route.params.username.trim(),
-                      password: route.params.password,
-                      mobile: '',
-                      defaultLocation: '',
-                      place: route.params.place,
-                      user: route.params.user,
-                    });
-                  }}>
-                  <Image source={require('./assets/volunteer.png')} />
-                  <Text>Volunteer</Text>
-                </TouchableOpacity>
-                <View style={{paddingHorizontal: 30}}></View>
-                <TouchableOpacity
-                  style={{
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    paddingVertical: 2,
-                  }}
-                  onPress={() => {
-                    navigation.navigate('DonorNGOVolunteer', {
-                      userType: 'Donor',
-                      username: route.params.username.trim(),
-                      password: route.params.password,
-                      mobile: '',
-                      defaultLocation: '',
-                      place: route.params.place,
-                      user: route.params.user,
-                    });
-                  }}>
-                  <Image source={require('./assets/ngo.png')} />
-                  <Text>NGO</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={{
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    paddingVertical: 2,
-                  }}
-                  onPress={() => {
-                    navigation.navigate('Profile', {
-                      userType: 'Donor',
-                      username: route.params.username.trim(),
-                      password: route.params.password,
-                      mobile: '',
-                      defaultLocation: '',
-                      place: route.params.place,
-                      user: route.params.user,
-                    });
-                  }}>
-                  <Image source={require('./assets/donor.png')} />
-                  <Text>Profile</Text>
-                </TouchableOpacity>
-              </View>
-            </DropShadow>
-            <View style={home.BottomBar_Circle}>
+          ),
+          bottomBar: (
+            <>
               <DropShadow
                 style={{
                   shadowColor: '#ddd',
-                  shadowOffset: {
-                    width: 0,
-                    height: 3,
-                  },
-                  shadowOpacity: 0.8,
-                  shadowRadius: 5,
+                  shadowOffset: {width: 0, height: -5},
+                  shadowOpacity: 0.6,
+                  shadowRadius: 6,
                 }}>
-                <TouchableOpacity
-                  style={home.BottomBar_Circle_v1}
-                  onPress={() => {
-                    navigation.navigate('Donation', {
-                      userType: 'Donor',
-                      username: route.params.username.trim(),
-                      password: route.params.password,
-                      mobile: '',
-                      defaultLocation: '',
-                      place: route.params.place,
-                      region: {latitude: '', longitude: ''},
-                    });
-                  }}>
-                  <Text
+                <View style={home.BottomBar_v1}>
+                  <TouchableOpacity
                     style={{
-                      textAlign: 'center',
-                      fontSize: 60,
-                      fontWeight: 'bold',
-                      opacity: 1,
-                      width: '100%',
-                      lineHeight: 70,
-                      verticalAlign: 'middle',
-                      color: 'black',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      paddingVertical: 2,
                     }}>
-                    +
-                  </Text>
-                </TouchableOpacity>
+                    <Image source={require('./assets/heart.png')} style={{width:"60%",resizeMode:"contain"}}/>
+                    <Text style={{fontSize:10}}>Motivate</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      paddingVertical: 2,
+                      marginTop:-6,
+                      paddingRight:40,
+                      paddingHorizontal:10
+                    }}
+                    onPress={() => {
+                      navigation.navigate('VolunteerDonor', {
+                        userType: 'Donor',
+                        username: route.params.username.trim(),
+                        password: route.params.password,
+                        mobile: '',
+                        defaultLocation: '',
+                        place: route.params.place,
+                        user: route.params.user,
+                        
+                      });
+                    }}>
+                    <Image source={require('./assets/volunteer.png')} style={{width:"60%",resizeMode:"contain"}}/>
+                    <Text style={{fontSize:10,marginTop:-1}}>Volunteer</Text>
+                  </TouchableOpacity>
+                  <View style={{width:40}}></View>
+                  <TouchableOpacity
+                    style={{
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      paddingVertical: 2,
+                      marginTop:-6
+                    }}
+                    onPress={() => {
+                      navigation.navigate('DonorNGOVolunteer', {
+                        userType: 'Donor',
+                        username: route.params.username.trim(),
+                        password: route.params.password,
+                        mobile: '',
+                        defaultLocation: '',
+                        place: route.params.place,
+                        user: route.params.user,
+                      });
+                    }}>
+                    <Image source={require('./assets/ngo.png')} style={{width:"50%",resizeMode:"contain"}}/>
+                    <Text style={{fontSize:10}}>organization</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      paddingVertical: 2,
+                      marginTop:-6,
+                      paddingHorizontal:10
+                    }}
+                    onPress={() => {
+                      navigation.navigate('Profile', {
+                        userType: 'Donor',
+                        username: route.params.username.trim(),
+                        password: route.params.password,
+                        mobile: '',
+                        defaultLocation: '',
+                        place: route.params.place,
+                        user: route.params.user,
+                      });
+                    }}>
+                    <Image source={require('./assets/donor.png')} style={{width:"80%",resizeMode:"contain"}}/>
+                    <Text style={{fontSize:10}}>Profile</Text>
+                  </TouchableOpacity>
+                </View>
               </DropShadow>
-              <View style={home.BottomBar_Circle_v2}></View>
-            </View>
-          </>
-        ),
-      });
-    } else if (route.params.place.ngo) {
-      setUserType('NGO');
-      setItems([
-        {id: 1, name: 'Donations'},
-        {id: 2, name: 'Donors'},
-      ]);
-      setTab({
-        topBar: (
-          <View style={home.TopBar}>
-            <View style={home.TopBar_v1}>
-              <View style={{justifyContent: 'center', alignItems: 'center'}}>
-                <Text
-                  style={{color: 'black', textAlign: 'center'}}
-                  onPress={() => {
-                    Flatlist.current?.scrollToIndex({
-                      animated: true,
-                      index: 0,
-                    });
+              <View style={home.BottomBar_Circle}>
+                <DropShadow
+                  style={{
+                    shadowColor: '#ddd',
+                    shadowOffset: {
+                      width: 0,
+                      height: 3,
+                    },
+                    shadowOpacity: 0.8,
+                    shadowRadius: 5,
                   }}>
-                  Donations
-                </Text>
+                  <TouchableOpacity
+                    style={home.BottomBar_Circle_v1}
+                    onPress={() => {
+                      navigation.navigate('Donation', {
+                        userType: 'Donor',
+                        username: route.params.username.trim(),
+                        password: route.params.password,
+                        mobile: '',
+                        defaultLocation: '',
+                        place: route.params.place,
+                        region: {latitude: '', longitude: ''},
+                      });
+                    }}>
+                    <Text
+                      style={{
+                        textAlign: 'center',
+                        fontSize: 60,
+                        fontWeight: 'bold',
+                        opacity: 1,
+                        width: '100%',
+                        lineHeight: 70,
+                        verticalAlign: 'middle',
+                        color: 'black',
+                      }}>
+                      +
+                    </Text>
+                  </TouchableOpacity>
+                </DropShadow>
+                <View style={home.BottomBar_Circle_v2}></View>
               </View>
-              <View>
-                <Text
-                  style={{color: 'black', textAlign: 'center'}}
-                  onPress={() => {
-                    Flatlist.current?.scrollToIndex({
-                      animated: true,
-                      index: 1,
-                    });
+            </>
+          ),
+        });
+      } else if (route.params.place.ngo) {
+        setUserType('NGO');
+        setItems([
+          {id: 1, name: 'Donations'},
+          {id: 2, name: 'Donors'},
+        ]);
+        setTab({
+          topBar: (
+            <View style={home.TopBar}>
+              <View style={home.TopBar_v1}>
+                <View style={{justifyContent: 'center', alignItems: 'center'}}>
+                  <Text
+                    style={{color: 'black', textAlign: 'center'}}
+                    onPress={() => {
+                      Flatlist.current?.scrollToIndex({
+                        animated: true,
+                        index: 0,
+                      });
+                    }}>
+                    Donations
+                  </Text>
+                </View>
+                <View>
+                  <Text
+                    style={{color: 'black', textAlign: 'center'}}
+                    onPress={() => {
+                      Flatlist.current?.scrollToIndex({
+                        animated: true,
+                        index: 1,
+                      });
+                    }}>
+                    Donors
+                  </Text>
+                </View>
+              </View>
+              <View style={home.TopBar_v2}>
+                <Animated.View
+                  style={{
+                    width: '48%',
+                    position: 'relative',
+                    left: selectedIndex,
                   }}>
-                  Donors
-                </Text>
+                  <LinearGradient
+                    start={{x: 0, y: 0}}
+                    end={{x: 1, y: 0}}
+                    colors={LinearColor}
+                    style={{
+                      padding: 2,
+                      borderRadius: 5,
+                      width: '100%',
+                    }}></LinearGradient>
+                </Animated.View>
               </View>
             </View>
-            <View style={home.TopBar_v2}>
-              <Animated.View
+          ),
+          bottomBar: (
+            <>
+              <DropShadow
                 style={{
-                  width: '48%',
-                  position: 'relative',
-                  left: selectedIndex,
+                  shadowColor: '#ddd',
+                  shadowOffset: {width: 0, height: -5},
+                  shadowOpacity: 0.6,
+                  shadowRadius: 6,
                 }}>
-                <LinearGradient
-                  start={{x: 0, y: 0}}
-                  end={{x: 1, y: 0}}
-                  colors={LinearColor}
-                  style={{
-                    padding: 2,
-                    borderRadius: 5,
-                    width: '100%',
-                  }}></LinearGradient>
-              </Animated.View>
-            </View>
-          </View>
-        ),
-        bottomBar: (
-          <>
-            <DropShadow
-              style={{
-                shadowColor: '#ddd',
-                shadowOffset: {width: 0, height: -5},
-                shadowOpacity: 0.6,
-                shadowRadius: 6,
-              }}>
-              <View style={{...home.BottomBar_v1, padding: 10}}>
-                <TouchableOpacity
-                  style={{
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    paddingVertical: 2,
-                  }}
-                  onPress={() => {
-                    navigation.navigate('DonorNGOVolunteer', {
-                      userType: 'NGO',
-                      username: route.params.username.trim(),
-                      password: route.params.password,
-                      mobile: '',
-                      defaultLocation: '',
-                      place: route.params.place,
-                      user: route.params.user,
-                    });
-                  }}>
-                  <Image source={require('./assets/request.png')} />
-                  <Text>Requests</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={{
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    paddingVertical: 2,
-                  }}
-                  onPress={() => {
-                    navigation.navigate('VolunteerNGO', {
-                      userType: 'NGO',
-                      username: route.params.username.trim(),
-                      password: route.params.password,
-                      mobile: '',
-                      defaultLocation: '',
-                      place: route.params.place,
-                      user: route.params.user,
-                    });
-                  }}>
-                  <Image source={require('./assets/volunteer.png')} />
-                  <Text>Volunteer</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={{
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    paddingVertical: 2,
-                  }}
-                  onPress={() => {
-                    navigation.navigate('Profile', {
-                      userType: 'NGO',
-                      username: route.params.username.trim(),
-                      password: route.params.password,
-                      mobile: '',
-                      defaultLocation: '',
-                      place: route.params.place,
-                      user: route.params.user,
-                    });
-                  }}>
-                  <Image source={require('./assets/ngo.png')} />
-                  <Text>Profile</Text>
-                </TouchableOpacity>
+                <View style={{...home.BottomBar_v1,paddingLeft:-10}}>
+                  <TouchableOpacity
+                    style={{
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      paddingVertical: 2,
+                    }}
+                    onPress={() => {
+                      navigation.navigate('DonorNGOVolunteer', {
+                        userType: 'NGO',
+                        username: route.params.username.trim(),
+                        password: route.params.password,
+                        mobile: '',
+                        defaultLocation: '',
+                        place: route.params.place,
+                        user: route.params.user,
+                      });
+                    }}>
+                    <Image source={require('./assets/request.png')} style={{width:"50%",resizeMode:"contain"}}/>
+                    <Text style={{marginTop:-3}}>Requests</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      paddingVertical: 2,
+                    }}
+                    onPress={() => {
+                      navigation.navigate('VolunteerNGO', {
+                        userType: 'NGO',
+                        username: route.params.username.trim(),
+                        password: route.params.password,
+                        mobile: '',
+                        defaultLocation: '',
+                        place: route.params.place,
+                        user: route.params.user,
+                      });
+                    }}>
+                    <Image source={require('./assets/volunteer.png')} style={{width:"60%",resizeMode:"contain"}}/>
+                    <Text>Volunteer</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      paddingVertical: 2,
+                    }}
+                    onPress={() => {
+                      navigation.navigate('Profile', {
+                        userType: 'NGO',
+                        username: route.params.username.trim(),
+                        password: route.params.password,
+                        mobile: '',
+                        defaultLocation: '',
+                        place: route.params.place,
+                        user: route.params.user,
+                      });
+                    }}>
+                    <Image source={require('./assets/donor.png')} style={{width:"90%",resizeMode:"contain"}}/>
+                    <Text style={{marginTop:-0}}>Profile</Text>
+                  </TouchableOpacity>
+                </View>
+              </DropShadow>
+            </>
+          ),
+        });
+      } else if (route.params.place.volunteer) {
+        setUserType('Volunteer');
+        setItems([
+          {id: 1, name: 'NGO'},
+          {id: 2, name: 'Donors'},
+        ]);
+        setTab({
+          topBar: (
+            <View style={home.TopBar}>
+              <View style={home.TopBar_v1}>
+                <View>
+                  <Text
+                    style={{color: 'black', textAlign: 'center'}}
+                    onPress={() => {
+                      Flatlist.current?.scrollToIndex({
+                        animated: true,
+                        index: 0,
+                      });
+                    }}>
+                    NGO
+                  </Text>
+                </View>
+                <View>
+                  <Text
+                    style={{color: 'black', textAlign: 'center'}}
+                    onPress={() => {
+                      Flatlist.current?.scrollToIndex({
+                        animated: true,
+                        index: 1,
+                      });
+                    }}>
+                    Donors
+                  </Text>
+                </View>
               </View>
-            </DropShadow>
-          </>
-        ),
-      });
-    } else if (route.params.place.volunteer) {
-      setUserType('Volunteer');
-      setItems([
-        {id: 1, name: 'NGO'},
-        {id: 2, name: 'Donors'},
-      ]);
-      setTab({
-        topBar: (
-          <View style={home.TopBar}>
-            <View style={home.TopBar_v1}>
-              <View>
-                <Text
-                  style={{color: 'black', textAlign: 'center'}}
-                  onPress={() => {
-                    Flatlist.current?.scrollToIndex({
-                      animated: true,
-                      index: 0,
-                    });
+              <View style={home.TopBar_v2}>
+                <Animated.View
+                  style={{
+                    width: '48%',
+                    position: 'relative',
+                    left: selectedIndex,
                   }}>
-                  NGO
-                </Text>
-              </View>
-              <View>
-                <Text
-                  style={{color: 'black', textAlign: 'center'}}
-                  onPress={() => {
-                    Flatlist.current?.scrollToIndex({
-                      animated: true,
-                      index: 1,
-                    });
-                  }}>
-                  Donors
-                </Text>
+                  <LinearGradient
+                    start={{x: 0, y: 0}}
+                    end={{x: 1, y: 0}}
+                    colors={LinearColor}
+                    style={{
+                      padding: 2,
+                      borderRadius: 5,
+                      width: '100%',
+                    }}></LinearGradient>
+                </Animated.View>
               </View>
             </View>
-            <View style={home.TopBar_v2}>
-              <Animated.View
+          ),
+          bottomBar: (
+            <>
+              <DropShadow
                 style={{
-                  width: '48%',
-                  position: 'relative',
-                  left: selectedIndex,
+                  shadowColor: '#ddd',
+                  shadowOffset: {width: 0, height: -5},
+                  shadowOpacity: 0.6,
+                  shadowRadius: 6,
                 }}>
-                <LinearGradient
-                  start={{x: 0, y: 0}}
-                  end={{x: 1, y: 0}}
-                  colors={LinearColor}
-                  style={{
-                    padding: 2,
-                    borderRadius: 5,
-                    width: '100%',
-                  }}></LinearGradient>
-              </Animated.View>
-            </View>
-          </View>
-        ),
-        bottomBar: (
-          <>
-            <DropShadow
-              style={{
-                shadowColor: '#ddd',
-                shadowOffset: {width: 0, height: -5},
-                shadowOpacity: 0.6,
-                shadowRadius: 6,
-              }}>
-              <View style={{...home.BottomBar_v1, padding: 10}}>
-                <TouchableOpacity
-                  style={{
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    paddingVertical: 2,
-                  }}
-                  onPress={() => {
-                    navigation.navigate('DonorNGOVolunteer', {
-                      userType: 'Volunteer',
-                      username: route.params.username.trim(),
-                      password: route.params.password,
-                      mobile: '',
-                      defaultLocation: '',
-                      place: route.params.place,
-                      user: route.params.user,
-                    });
-                  }}>
-                  <Image source={require('./assets/request.png')} />
-                  <Text>Requests</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={{
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    paddingVertical: 2,
-                  }}
-                  onPress={() => {
-                    navigation.navigate('VolunteerMap', {
-                      userType: 'Volunteer',
-                      username: route.params.username.trim(),
-                      password: route.params.password,
-                      mobile: '',
-                      defaultLocation: '',
-                      place: route.params.place,
-                      user: route.params.user,
-                    });
-                  }}>
-                  <Image
-                    source={require('./assets/map.png')}
-                    style={{height: 30, resizeMode: 'contain'}}
-                  />
-                  <Text>Map</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={{
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    paddingVertical: 2,
-                  }}
-                  onPress={() => {
-                    navigation.navigate('Profile', {
-                      userType: 'Volunteer',
-                      username: route.params.username.trim(),
-                      password: route.params.password,
-                      mobile: '',
-                      defaultLocation: '',
-                      place: route.params.place,
-                      user: route.params.user,
-                    });
-                  }}>
-                  <Image source={require('./assets/ngo.png')} />
-                  <Text>Profile</Text>
-                </TouchableOpacity>
-              </View>
-            </DropShadow>
-          </>
-        ),
-      });
+                <View style={{...home.BottomBar_v1, paddingTop: 10}}>
+                  <TouchableOpacity
+                    style={{
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      paddingVertical: 2,
+                      marginTop:-20
+                    }}
+                    onPress={() => {
+                      navigation.navigate('DonorNGOVolunteer', {
+                        userType: 'Volunteer',
+                        username: route.params.username.trim(),
+                        password: route.params.password,
+                        mobile: '',
+                        defaultLocation: '',
+                        place: route.params.place,
+                        user: route.params.user,
+                      });
+                    }}>
+                    <Image source={require('./assets/request.png')} style={{width:"50%",resizeMode:"contain"}}/>
+                    <Text style={{marginTop:-4}}>Requests</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      paddingVertical: 2,
+                      marginTop:-20
+                    }}
+                    onPress={() => {
+                      navigation.navigate('VolunteerMap', {
+                        userType: 'Volunteer',
+                        username: route.params.username.trim(),
+                        password: route.params.password,
+                        mobile: '',
+                        defaultLocation: '',
+                        place: route.params.place,
+                        user: route.params.user,
+                      });
+                    }}>
+                    <Image
+                      source={require('./assets/map.png')}
+                      style={{width:"100%",resizeMode:"contain"}}
+                    />
+                    <Text style={{marginTop:-7}}>Map</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      paddingVertical: 2,
+                      marginTop:-15
+                    }}
+                    onPress={() => {
+                      navigation.navigate('Profile', {
+                        userType: 'Volunteer',
+                        username: route.params.username.trim(),
+                        password: route.params.password,
+                        mobile: '',
+                        defaultLocation: '',
+                        place: route.params.place,
+                        user: route.params.user,
+                      });
+                    }}>
+                    <Image source={require('./assets/donor.png')} style={{width:"90%",resizeMode:"contain"}}/>
+                    <Text style={{marginTop:-0}}>Profile</Text>
+                  </TouchableOpacity>
+                </View>
+              </DropShadow>
+            </>
+          ),
+        });
+      }
+    }
+    catch(err){
+      console.log(err)
     }
   }, []);
 
@@ -694,7 +722,7 @@ const home = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
     backgroundColor: 'white',
-    paddingHorizontal: 5,
+    paddingHorizontal: 10,
   },
   BottomBar_Circle_v1: {
     borderRadius: 100,

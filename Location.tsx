@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Alert,
   BackHandler,
   Dimensions,
   FlatList,
@@ -30,12 +31,11 @@ const requestLocationPermission = async () => {
         buttonPositive: 'OK',
       },
     );
-    console.log('granted', granted);
     if (granted === 'granted') {
       console.log('You can use Geolocation');
       return true;
     } else {
-      console.log('You cannot use Geolocation');
+      Alert.alert('You cannot use Geolocation');
       return false;
     }
   } catch (err) {
@@ -46,7 +46,6 @@ const requestLocationPermission = async () => {
 const getLocation = (region: any, setRegion: any, setShowMap: any) => {
   const result = requestLocationPermission();
   result.then(res => {
-    console.log('res is:', res);
     if (res) {
       Geolocation.getCurrentPosition(
         position => {
@@ -56,12 +55,10 @@ const getLocation = (region: any, setRegion: any, setShowMap: any) => {
             latitudeDelta: region.latitudeDelta,
             longitudeDelta: region.longitudeDelta,
           });
-          console.log('true');
           setShowMap(true);
         },
         error => {
           // See error code charts below.
-          console.log(error.code, error.message);
 
           setShowMap(true);
         },
@@ -79,14 +76,13 @@ const DonLoc = (props: any): JSX.Element => {
       status={color}
       style={{overflow: 'hidden'}}
       onPress={() => {
-        console.log(color);
         if (color == 'danger') {
           props.pickup.push({
             id: props.item.id,
             donor: props.item.donor,
             mobile: props.item.mobile,
             name: props.item.name,
-            location: props.region,
+            location: props.item.location,
           });
           props.setPickup(props.pickup);
           setColor('success');
@@ -117,7 +113,7 @@ export default function Location({
 
   const [showMap, setShowMap] = React.useState(false);
   const [modalVisible, setModalVisible] = React.useState(false);
-  const [items, setItems] = React.useState();
+  const [items, setItems] = React.useState([]);
   const [pickup, setPickup]: any = React.useState([]);
 
   React.useEffect(() => {
@@ -133,7 +129,6 @@ export default function Location({
         //specify our coordinates.
         initialRegion={region}
         onRegionChangeComplete={region => {
-          console.log(region);
           setRegion(region);
         }}>
         <Marker coordinate={region} />
@@ -161,22 +156,23 @@ export default function Location({
           backgroundColor: 'rgba(0,0,0,0.5)',
         }}
         onPress={() => {
-          console.log(route);
 
           if (route.params.userType == 'Donor') {
-            console.log(route.params);
             navigation.navigate('Donation', {...route.params, region});
           } else if (route.params.userType == 'NGO') {
             database()
               .ref(`/requests/${route.params.props.username.trim()}`)
               .once('value')
               .then(snapshot => {
-                console.log(snapshot.val());
                 if (snapshot.val()) {
                   let data: any = Object.values(snapshot.val());
-                  setItems(data);
+                  let newData: any = [];
+            data.forEach((element: any) => {
+              if (element.status == 'Accepted') newData.push(element);
+            });
+                  setItems(newData);
+                  setModalVisible(!modalVisible);
                 }
-                setModalVisible(!modalVisible);
               });
           }
         }}>
@@ -221,7 +217,7 @@ export default function Location({
                   />
                 </View>
               )}
-              keyExtractor={item => String(item.id)}
+              keyExtractor={(item:any) => String(item.id)}
               showsHorizontalScrollIndicator={false}
               showsVerticalScrollIndicator={false}
             />
@@ -237,60 +233,79 @@ export default function Location({
                 backgroundColor: 'rgba(0,0,0,0.5)',
               }}
               onPress={() => {
-                console.log(pickup);
 
-                database()
-                  .ref(
-                    `/volreq/${route.params.props.username.trim()}/${
-                      route.params.props.Item.id
-                    }`,
-                  )
-                  .set({
-                    ...route.params.props.Item,
-                    status: 'Requested',
-                    ngo: route.params.props.username.trim(),
-                    requestdate: Date.now(),
-                    drop: region,
-                    pickup: pickup,
+                if(items.length && pickup.length){
+                  let colorCode = `#${parseInt(String(Math.random()*10))}${parseInt(String(Math.random()*10))}${parseInt(String(Math.random()*10))}${parseInt(String(Math.random()*10))}${parseInt(String(Math.random()*10))}${parseInt(String(Math.random()*10))}`;
+                  database()
+                    .ref(
+                      `/volreq/${route.params.props.username.trim()}/${
+                        route.params.props.Item.id
+                      }`,
+                    )
+                    .set({
+                      ...route.params.props.Item,
+                      status: 'Requested',
+                      ngo: route.params.props.username.trim(),
+                      requestdate: Date.now(),
+                      drop: region,
+                      pickup: pickup,
+                      color: colorCode
+                    });
+                  database()
+                    .ref(
+                      `/volreq/${route.params.props.Item.name.trim()}/${
+                        route.params.props.Item.id
+                      }`,
+                    )
+                    .set({
+                      ...route.params.props.Item,
+                      status: 'Requested',
+                      ngo: route.params.props.username.trim(),
+                      mobile: route.params.props.user.mobile,
+                      defaultlocation: route.params.props.user.location,
+                      requestdate: Date.now(),
+                      drop: region,
+                      pickup: pickup,
+                      color: colorCode
+                    });
+                  database()
+                    .ref(
+                      `/notifications/${route.params.props.Item.name.trim()}/${
+                        route.params.props.Item.id
+                      }`,
+                    )
+                    .set({
+                      id: route.params.props.Item.id,
+                      name: route.params.props.username,
+                      time: Date.now(),
+                      msg: `Request From ${route.params.props.username.trim()}`,
+                      status:'unread'
+                    });
+                  setModalVisible(!modalVisible);
+                  navigation.navigate('VolunteerNGO', {
+                    userType: 'NGO',
+                    username: route.params.props.username.trim(),
+                    password: route.params.props.password,
+                    mobile: '',
+                    defaultLocation: '',
+                    place: route.params.props.place,
+                    user: route.params.props.user,
+                    toggleRequestFromLocation:true
                   });
-                database()
-                  .ref(
-                    `/volreq/${route.params.props.Item.name.trim()}/${
-                      route.params.props.Item.id
-                    }`,
-                  )
-                  .set({
-                    ...route.params.props.Item,
-                    status: 'Requested',
-                    ngo: route.params.props.username.trim(),
-                    mobile: route.params.props.user.mobile,
-                    defaultlocation: route.params.props.user.location,
-                    requestdate: Date.now(),
-                    drop: region,
-                    pickup: pickup,
-                  });
-                database()
-                  .ref(
-                    `/notifications/${route.params.props.Item.name.trim()}/${
-                      route.params.props.Item.id
-                    }`,
-                  )
-                  .set({
-                    id: route.params.props.Item.id,
-                    name: route.params.props.Item.name,
-                    time: Date.now(),
-                    msg: `Request From ${route.params.props.username.trim()},status:'unread'`,
-                  });
-                setModalVisible(!modalVisible);
-                navigation.navigate('VolunteerNGO', {
-                  userType: 'NGO',
-                  username: route.params.props.username.trim(),
-                  password: route.params.props.password,
-                  mobile: '',
-                  defaultLocation: '',
-                  place: route.params.props.place,
-                  user: route.params.props.user,
-                });
+
+                }else{
+                  Alert.alert("Task Unsuccessful!","No Donations are accepted yet.",[{text: 'OK', onPress: () => navigation.navigate('VolunteerNGO', {
+                    userType: 'NGO',
+                    username: route.params.props.username.trim(),
+                    password: route.params.props.password,
+                    mobile: '',
+                    defaultLocation: '',
+                    place: route.params.props.place,
+                    user: route.params.props.user,
+                    toggleRequestFromLocation:false
+                  }),}])
+                }
+
               }}>
               <Text style={{textAlign: 'center', color: 'white'}}>Done</Text>
             </TouchableOpacity>

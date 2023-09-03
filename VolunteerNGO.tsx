@@ -62,7 +62,7 @@ export default function VolunteerNGO({
               position: 'absolute',
               left: '55%',
               transform: [{translateX: -windowWidth * 0.1}],
-              fontSize: 25,
+              fontSize: 20,
               color: 'black',
             }}>
             {route.params.userType}
@@ -79,7 +79,6 @@ export default function VolunteerNGO({
                       animated: true,
                       index: 0,
                     });
-                    console.log('TT', selectedIndex);
                   }}>
                   Volunteer
                 </Text>
@@ -92,7 +91,6 @@ export default function VolunteerNGO({
                       animated: true,
                       index: 1,
                     });
-                    console.log(selectedIndex);
                   }}>
                   Request
                 </Text>
@@ -105,7 +103,6 @@ export default function VolunteerNGO({
                       animated: true,
                       index: 2,
                     });
-                    console.log('TT', selectedIndex);
                   }}>
                   Accepted
                 </Text>
@@ -118,7 +115,6 @@ export default function VolunteerNGO({
                       animated: true,
                       index: 3,
                     });
-                    console.log(selectedIndex);
                   }}>
                   Map
                 </Text>

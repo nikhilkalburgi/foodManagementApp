@@ -60,6 +60,22 @@ export default function DonationDetails({
     .once('value', snapshot => {
       if (snapshot.val() == 'Requested' || snapshot.val() == 'Accepted')
         setRequested(true);
+      else{
+        setRequested(false);
+      }
+    });
+    database()
+    .ref(
+      `/requests/${route.params.username.trim()}/${
+        route.params.Item.id
+      }/status`,
+    )
+    .on('value', snapshot => {
+      if (snapshot.val() == 'Requested' || snapshot.val() == 'Accepted')
+        setRequested(true);
+      else{
+        setRequested(false);
+      }
     });
 
   return (
@@ -281,6 +297,19 @@ export default function DonationDetails({
                     onPress={() => {
                       database()
                         .ref(
+                          `/requests/${route.params.username.trim()}/${
+                            route.params.Item.id
+                          }`,
+                        ).set(null)
+                        if(route.params.Item.ngo)
+                        database()
+                        .ref(
+                          `/requests/${route.params.Item.ngo.trim()}/${
+                            route.params.Item.id
+                          }`,
+                        ).set(null)
+                      database()
+                        .ref(
                           `/donations/${route.params.username.trim()}/${
                             route.params.Item.id
                           }`,
@@ -327,11 +356,11 @@ export default function DonationDetails({
                     flexDirection: 'row',
                     alignItems: 'center',
                     overflow: 'hidden',
-                    padding: 5,
+                    paddingHorizontal: 5,
+                    height:windowHeight*0.08
                   }}
                   onPress={() => {
                     if (!requested) {
-                      console.log('Requested', route.params.username);
                       database()
                         .ref(
                           `/requests/${route.params.username.trim()}/${
@@ -379,14 +408,13 @@ export default function DonationDetails({
                         )
                         .set(null);
                     } else {
-                      console.log('Cancelled');
                       database()
                         .ref(
                           `/donations/${route.params.Item.donor.trim()}/${
                             route.params.Item.id
                           }`,
                         )
-                        .set(route.params.Item);
+                        .set({date:route.params.Item.date, defaultlocation:route.params.Item.defaultlocation, donor:route.params.Item.donor, expiry:route.params.Item.expiry, id:route.params.Item.id, location:route.params.Item.location, mobile:route.params.Item.mobile, name:route.params.Item.name, note:route.params.Item.note, type:route.params.Item.type, weight:route.params.Item.weight});
                       database()
                         .ref(
                           `/notifications/${route.params.Item.donor.trim()}/${
@@ -414,8 +442,28 @@ export default function DonationDetails({
                           }`,
                         )
                         .set(null);
+
+                        database().ref(`/volreq/${route.params.username.trim()}`).once('value',(snapshot)=>{
+                          if(snapshot.val()){
+                            let d1 = Object.values(snapshot.val());
+                            d1.forEach((value:any)=>{
+                              if(value.pickup.length == 1){
+                                database().ref(`/volreq/${route.params.username.trim()}/${value.id}`).set(null)
+                                database().ref(`/volreq/${value.name.trim()}/${value.id}`).set(null)
+                              }
+                              else{
+                                value.pickup.forEach((d2:any,index:any)=>{
+                                  if(d2.id == route.params.Item.id){
+                                    database().ref(`/volreq/${route.params.username.trim()}/${value.id}/pickup/${index}`).set(null)
+                                    database().ref(`/volreq/${value.name.trim()}/${value.id}/pickup/${index}`).set(null)
+                                  }
+                                })
+                              }
+                            })
+
+                          }
+                        })
                     }
-                    setRequested(!requested);
                   }}>
                   <View style={{flexGrow: 1, padding: 5}}>
                     <Image
@@ -424,6 +472,7 @@ export default function DonationDetails({
                           ? require('./assets/cancel.png')
                           : require('./assets/request.png')
                       }
+                      style={{width:'80%'}} resizeMode='contain'
                     />
                   </View>
                   <Text style={{flexGrow: 1, textAlign: 'center'}}>

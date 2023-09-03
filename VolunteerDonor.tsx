@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Alert,
   BackHandler,
   Dimensions,
   FlatList,
@@ -32,12 +33,11 @@ const requestLocationPermission = async () => {
         buttonPositive: 'OK',
       },
     );
-    console.log('granted', granted);
     if (granted === 'granted') {
       console.log('You can use Geolocation');
       return true;
     } else {
-      console.log('You cannot use Geolocation');
+      Alert.alert('You cannot use Geolocation');
       return false;
     }
   } catch (err) {
@@ -48,7 +48,6 @@ const requestLocationPermission = async () => {
 const getLocation = (region: any, setRegion: any, setShowMap: any) => {
   const result = requestLocationPermission();
   result.then(res => {
-    console.log('res is:', res);
     if (res) {
       Geolocation.getCurrentPosition(
         position => {
@@ -58,12 +57,11 @@ const getLocation = (region: any, setRegion: any, setShowMap: any) => {
             latitudeDelta: region.latitudeDelta,
             longitudeDelta: region.longitudeDelta,
           });
-          console.log('true');
           setShowMap(true);
         },
         error => {
           // See error code charts below.
-          console.log(error.code, error.message);
+          Alert.alert("Error!", error.message);
 
           setShowMap(true);
         },
@@ -93,111 +91,122 @@ export default function VolunteerDonor({
   const [pickup, setPickup]: any = React.useState([]);
 
   React.useEffect(() => {
-    getLocation(region, setRegion, setShowMap);
+    try{
 
-    database()
-      .ref(`/delivery/${route.params.username.trim()}`)
-      .once('value', snapshot => {
-        if (snapshot.val()) {
-          let data: any = Object.values(snapshot.val());
-          data.forEach((value: any) => {
-            database()
-              .ref(`/volreq/${value.volunteer.trim()}/${value.id}`)
-              .once('value', snapshot => {
-                let vol = snapshot.val();
-                if (data) {
-                  let array: any[] = [];
-                  let ele: {
-                    region: any;
-                    title: {type: string; name: any};
-                    mobile: any;
-                    id: any;
-                  } | null = null;
-
-                  array.push({
-                    region: vol.drop,
-                    title: {type: 'NGO', name: vol.ngo},
-                    mobile: vol.mobile,
-                    id: vol.id,
-                  });
-                  database()
-                    .ref(`/delivery/${value.volunteer.trim()}/geo`)
-                    .once('value', snapshot => {
-                      ele = {
-                        region: snapshot.val(),
-                        title: {type: 'Volunteer', name: vol.name},
-                        mobile: vol.mobile,
-                        id: vol.id,
-                      };
-                      array.push(ele);
-                      if (array.length) setItems(array);
+      getLocation(region, setRegion, setShowMap);
+  
+      database()
+        .ref(`/delivery/${route.params.username.trim()}`)
+        .once('value', snapshot => {
+          if (snapshot.val()) {
+            let data: any = Object.values(snapshot.val());
+            data.forEach((value: any) => {
+              
+              database()
+                .ref(`/volreq/${value.volunteer.trim()}/${value.id}`)
+                .once('value', snapshot => {
+                  let vol = snapshot.val();
+                  if (vol && vol.status == 'InProgress') {
+                    let array: any[] = [];
+                    let ele: {
+                      region: any;
+                      title: {type: string; name: any};
+                      mobile: any;
+                      id: any;
+                    } | null = null;
+  
+                    array.push({
+                      region: vol.drop,
+                      title: {type: 'NGO', name: vol.ngo},
+                      mobile: vol.mobile,
+                      id: vol.id,
                     });
-                  database()
-                    .ref(`/delivery/${value.volunteer.trim()}/geo`)
-                    .on('value', snapshot => {
-                      if (ele)
-                        array.splice(array.indexOf(ele), 1, {
+                    database()
+                      .ref(`/delivery/${value.volunteer.trim()}/geo`)
+                      .once('value', snapshot => {
+                        ele = {
+                          region: snapshot.val(),
+                          title: {type: 'Volunteer', name: vol.name},
+                          mobile: vol.mobile,
+                          id: vol.id,
+                        };
+                        array.push(ele);
+                        if (array.length) setItems(array);
+                      });
+                    database()
+                      .ref(`/delivery/${value.volunteer.trim()}/geo`)
+                      .on('value', snapshot => {
+                        if (ele)
+                          array.splice(array.indexOf(ele), 1, {
+                            region: snapshot.val(),
+                            title: {type: 'Volunteer', name: vol.name},
+                            mobile: vol.mobile,
+                            id: vol.id,
+                          });
+  
+                        ele = {
+                          region: snapshot.val(),
+                          title: {type: 'Volunteer', name: vol.name},
+                          mobile: vol.mobile,
+                          id: vol.id,
+                        };
+                        setItems(array);
+                        setShowMap(false);
+                        setShowMap(true)
+                      });
+                  }
+                });
+  
+              database()
+                .ref(`/volreq/${value.volunteer.trim()}/${value.id}`)
+                .on('value', snapshot => {
+                  let vol = snapshot.val();
+                  if (vol && vol.status == "InProgress") {
+                    let array: any[] = [];
+  
+                    array.push({
+                      region: vol.drop,
+                      title: {type: 'NGO', name: vol.ngo},
+                      mobile: vol.mobile,
+                      id: vol.id,
+                    });
+                    database()
+                      .ref(`/delivery/${value.volunteer.trim()}/geo`)
+                      .on('value', snapshot => {
+                        array.push({
                           region: snapshot.val(),
                           title: {type: 'Volunteer', name: vol.name},
                           mobile: vol.mobile,
                           id: vol.id,
                         });
-
-                      ele = {
-                        region: snapshot.val(),
-                        title: {type: 'Volunteer', name: vol.name},
-                        mobile: vol.mobile,
-                        id: vol.id,
-                      };
-                      setItems(array);
-                    });
-                }
-              });
-
-            database()
-              .ref(`/volreq/${value.volunteer.trim()}/${value.id}`)
-              .on('value', snapshot => {
-                let vol = snapshot.val();
-                if (data) {
-                  let array: any[] = [];
-
-                  array.push({
-                    region: vol.drop,
-                    title: {type: 'NGO', name: vol.ngo},
-                    mobile: vol.mobile,
-                    id: vol.id,
-                  });
-                  database()
-                    .ref(`/delivery/${value.volunteer.trim()}/geo`)
-                    .on('value', snapshot => {
-                      array.push({
-                        region: snapshot.val(),
-                        title: {type: 'Volunteer', name: vol.name},
-                        mobile: vol.mobile,
-                        id: vol.id,
                       });
-                    });
-                  if (array.length) setItems(array);
-                }
-              });
-          });
-        }
-      });
+                    if (array.length){
+                      setItems(array);
+                      setShowMap(false);
+                      setShowMap(true)
+                    } 
+                  }
+                });
+            });
+          }
+        });
+    }
+    catch(err){
+
+    }
   }, []);
 
   let mapMarkers = () => {
-    console.log('iiiiiii', items);
     return items.map((report: any, index: number) => (
       <Marker
         key={index}
         coordinate={report.region}
         title={`${report.title.type} : ${report.title.name}`}
+        pinColor={(report.title.type == 'Volunteer')?'green':'blue'}
         description={
-          report.mobile ? `Mobile : ${report.mobile}` : `${index}`
+          report.mobile ? `Mobile : ${report.mobile}` : `${index+1}`
         }></Marker>
     ));
-    setShowMap(false);
-    setShowMap(true);
   };
 
   return showMap ? (
