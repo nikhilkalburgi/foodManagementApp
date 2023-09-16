@@ -130,41 +130,131 @@ export default function EditProfileScreen({
               disabled={disable}
               style={{backgroundColor: 'transparent', borderWidth: 0}}
               onPress={() => {
-                setDisable(true);
+                try{
 
-                if (newPass == confirmPass) {
-                  database()
-                    .ref(`/users/${route.params.username.trim()}/file`)
-                    .set(file)
-                    .then(() => {
-                      database()
-                        .ref(`/users/${route.params.username.trim()}/password`)
-                        .set(newPass)
-                        .then(() => {
-                          database()
-                            .ref(
-                              `/users/${route.params.username.trim()}/mobile`,
-                            )
-                            .set(mobile)
-                            .then(() => {
-                              database()
-                                .ref(
-                                  `/users/${route.params.username.trim()}/location`,
-                                )
-                                .set(defaultLocation)
-                                .then(() => {
-                                  setDisable(false);
-                                  navigation.navigate('Profile', {
-                                    username: route.params.username,
-                                    password: newPass,
-                                    userType: route.params.userType,
-                                    mobile,
-                                    defaultLocation,
+                  setDisable(true);
+                  if ((newPass == confirmPass) && (newPass.match(/[^a-zA-Z0-9@#\s]/g) || newPass == "")) {
+                    database()
+                      .ref(`/users/${route.params.username.trim()}/file`)
+                      .set(file)
+                      .then(() => {
+  
+                        if(newPass)
+                        database()
+                          .ref(`/users/${route.params.username.trim()}/password`)
+                          .set(newPass)
+  
+                            database()
+                              .ref(
+                                `/users/${route.params.username.trim()}/mobile`,
+                              )
+                              .set(mobile)
+                              .then(() => {
+                                database()
+                                  .ref(
+                                    `/users/${route.params.username.trim()}/location`,
+                                  )
+                                  .set(defaultLocation)
+                                  .then(() => {
+  
+  
+                                    if(route.params.userType == "Volunteer"){
+                                      database()
+                                      .ref(
+                                        `/volreq/${route.params.username.trim()}`,
+                                      )
+                                      .once("value",(snapshot)=>{
+                                        if(snapshot.val()){
+                                        let data = Object.values(snapshot.val());
+                                          data.forEach((value:any)=>{
+                                            database().ref(`/volreq/${route.params.username.trim()}/${value.id}/mobile`).set(mobile)
+                                            database().ref(`/volreq/${route.params.username.trim()}/${value.id}/location`).set(defaultLocation)
+                                            database().ref(`/volreq/${value.ngo.trim()}/${value.id}/mobile`).set(mobile)
+                                            database().ref(`/volreq/${value.ngo.trim()}/${value.id}/location`).set(defaultLocation)
+                                          })
+                                        }
+                                      })
+                                    }
+  
+                                    if(route.params.userType == "Donor"){
+                                      database()
+                                      .ref(
+                                        `/requests/${route.params.username.trim()}`
+                                      )
+                                      .once("value",(snapshot)=>{
+                                        if(snapshot.val()){
+                                        let data = Object.values(snapshot.val());
+                                          data.forEach((value:any)=>{
+                                            database().ref(`/requests/${route.params.username.trim()}/${value.id}/donationmobile`).set(mobile)
+                                            database().ref(`/requests/${route.params.username.trim()}/${value.id}/donationlocation`).set(defaultLocation)
+                                            database().ref(`/requests/${value.ngo.trim()}/${value.id}/donationmobile`).set(mobile)
+                                            database().ref(`/requests/${value.ngo.trim()}/${value.id}/donationlocation`).set(defaultLocation)
+                                          })
+                                        }
+                                      })
+                                      database()
+                                      .ref(
+                                        `/donations/${route.params.username.trim()}`
+                                      )
+                                      .once("value",(snapshot)=>{
+                                        if(snapshot.val()){
+                                        let data = Object.values(snapshot.val());
+                                          data.forEach((value:any)=>{
+                                            database().ref(`/donations/${route.params.username.trim()}/${value.id}/donationmobile`).set(mobile)
+                                            database().ref(`/donations/${route.params.username.trim()}/${value.id}/donationlocation`).set(defaultLocation)
+                                        })
+                                      }
+                                      })
+                                    }
+  
+                                    if(route.params.userType == "NGO"){
+                                      database()
+                                      .ref(
+                                        `/requests/${route.params.username.trim()}`
+                                      )
+                                      .once("value",(snapshot)=>{
+                                        if(snapshot.val()){
+                                        let data = Object.values(snapshot.val());
+                                          data.forEach((value:any)=>{
+                                            database().ref(`/requests/${route.params.username.trim()}/${value.id}/mobile`).set(mobile)
+                                            database().ref(`/requests/${route.params.username.trim()}/${value.id}/defaultlocation`).set(defaultLocation)
+                                            database().ref(`/requests/${value.donor.trim()}/${value.id}/mobile`).set(mobile)
+                                            database().ref(`/requests/${value.donor.trim()}/${value.id}/defaultlocation`).set(defaultLocation)
+                                          })
+                                        }
+                                      })
+                                      database()
+                                      .ref(
+                                        `/volreq/${route.params.username.trim()}`,
+                                      )
+                                      .once("value",(snapshot)=>{
+                                        if(snapshot.val()){
+                                        let data = Object.values(snapshot.val());
+                                          data.forEach((value:any)=>{
+                                            database().ref(`/volreq/${route.params.username.trim()}/${value.id}/mobile`).set(mobile)
+                                            database().ref(`/volreq/${route.params.username.trim()}/${value.id}/location`).set(defaultLocation)
+                                            database().ref(`/volreq/${value.name.trim()}/${value.id}/mobile`).set(mobile)
+                                            database().ref(`/volreq/${value.name.trim()}/${value.id}/location`).set(defaultLocation)
+                                          })
+                                        }
+                                      })
+                                    }
+  
+                                    setDisable(false);
+                                    navigation.navigate('Profile', {
+                                      username: route.params.username,
+                                      password: newPass,
+                                      userType: route.params.userType,
+                                      mobile,
+                                      defaultLocation,
+                                    });
                                   });
-                                });
-                            });
-                        });
-                    });
+                              });
+                      });
+                  }
+                }
+                catch(err){
+                  console.log(err)
                 }
               }}>
               <Animated.Text>Done</Animated.Text>

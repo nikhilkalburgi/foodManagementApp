@@ -392,11 +392,12 @@ const Volunteers = (props: any): JSX.Element => {
             bottom: 10,
             right: 10,
             backgroundColor: 'white',
+            zIndex:999
           }}
           onPress={() => {
             try{
               
-              database().ref(`/volreq/${props.username.trim()}/${props.Item.id}`).once('value',(snapshot)=>{
+              database().ref(`/volreq/${props.username.trim()}/${props.Item.id+props.username.trim()}`).once('value',(snapshot)=>{
                 let data = snapshot.val()
                 if(data && data.status == 'InProgress' ){
                   Alert.alert("Not Possible!",`This Volunteer is already in your list with ${data.status} status`);
@@ -416,19 +417,19 @@ const Volunteers = (props: any): JSX.Element => {
                   } else {
                     database()
                       .ref(
-                        `/notifications/${props.Item.name.trim()}/${props.Item.id}`,
+                        `/notifications/${props.Item.name.trim()}/${props.Item.id + props.username.trim()}`,
                       )
                       .set({
-                        id: props.Item.id,
+                        id: props.Item.id + props.username.trim(),
                         name: props.username,
                         time: Date.now(),
                         msg: `Cancelled By ${props.username.trim()},status:'unread'`,
                       });
                     database()
-                      .ref(`/volreq/${props.username.trim()}/${props.Item.id}`)
+                      .ref(`/volreq/${props.username.trim()}/${props.Item.id + props.username.trim()}`)
                       .set(null);
                     database()
-                      .ref(`/volreq/${props.Item.name.trim()}/${props.Item.id}`)
+                      .ref(`/volreq/${props.Item.name.trim()}/${props.Item.id + props.username.trim()}`)
                       .set(null);
                   }
                 }

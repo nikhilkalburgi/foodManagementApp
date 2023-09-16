@@ -24,6 +24,8 @@ import VolunteerMap from './VolunteerMap';
 import VolunteerDonor from './VolunteerDonor';
 import NGOMap from './NGOMap';
 
+import SplashScreen from 'react-native-splash-screen';
+
 let initialPage = 'Login',
   params = {};
 
@@ -34,6 +36,7 @@ const windowHeight = Dimensions.get('window').height;
 function AppStack(props: any) {
   let [appState, setAppState] = React.useState(true);
 
+ 
   async function retrieveUserSession() {
     try {
       let session: any = await EncryptedStorage.getItem('user_session');
@@ -59,12 +62,13 @@ function AppStack(props: any) {
             };
             setAppState(false);
           });
-      } else {
-        setAppState(false);
+        } else {
+          setAppState(false);
+        }
+      } catch (error) {
+        // There was an error on the native side
       }
-    } catch (error) {
-      // There was an error on the native side
-    }
+      SplashScreen.hide()
   }
   retrieveUserSession();
   return !appState ? (

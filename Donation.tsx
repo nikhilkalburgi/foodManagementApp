@@ -48,6 +48,7 @@ export default function DonationScreen({
   const [disable, setDisable] = React.useState(false);
 
   const onChange = (event: any, selectedDate: any) => {
+    console.log(date)
     setDate(selectedDate);
   };
 
@@ -190,10 +191,12 @@ export default function DonationScreen({
                               type: imageType[Number(type.toString()) - 1],
                               donor: route.params.username.trim(),
                               location: route.params.region,
-                              expiry: date,
+                              expiry: String(date),
                               date: Date.now(),
                               weight: weight,
                               note: note,
+                              donationmobile:route.params.mobile,
+                              donationlocation:route.params.defaultLocation
                             })
                             .then(() => {
                               setDisable(false);
@@ -220,10 +223,12 @@ export default function DonationScreen({
                             type: imageType[Number(type.toString()) - 1],
                             donor: route.params.username.trim(),
                             location: route.params.region,
-                            expiry: date,
+                            expiry: String(date),
                             date: Date.now(),
                             weight: weight,
                             note: note,
+                            donationmobile:route.params.mobile,
+                            donationlocation:route.params.defaultLocation
                           })
                           .then(() => {
                             setDisable(false);

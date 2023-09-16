@@ -12,36 +12,16 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
+import MapView, {Marker, PROVIDER_GOOGLE, Polyline} from 'react-native-maps';
 import Geolocation from 'react-native-geolocation-service';
 import database from '@react-native-firebase/database';
 import {Button, Spinner} from '@ui-kitten/components';
+import {decode} from "@mapbox/polyline"; //please install this package before running!
 
 const windowHeight = Dimensions.get('window').height;
 const windowWidth = Dimensions.get('window').width;
 let updateLocToggle = true;
 
-let UpdateLoc = (route:any,region:any)=>{
-  setInterval(() => {
-      Geolocation.getCurrentPosition(
-        position => {
-          database()
-            .ref(`/delivery/${route.params.username.trim()}/geo`)
-            .set({
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
-              latitudeDelta: region.latitudeDelta,
-              longitudeDelta: region.longitudeDelta,
-            });
-        },
-        error => {
-          // See error code charts below.
-          Alert.alert("Error!", error.message);
-        },
-        {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
-      );
-    }, 50000);
-}
 
 // Function to get permission for location
 const requestLocationPermission = async () => {
@@ -75,6 +55,17 @@ export default function VolunteerMap({
   navigation: any;
   route: any;
 }) {
+  const [region, setRegion] = React.useState({
+    latitude: 51.5079145,
+    longitude: -0.0899163,
+    latitudeDelta: 0.005,
+    longitudeDelta: 0.005,
+  });
+
+  const [showMap, setShowMap] = React.useState(false);
+  const [items, setItems]: any = React.useState([]);
+  const [coords, setCoords]:any = React.useState([]);
+
   const getLocation = (region: any, setRegion: any, setShowMap: any) => {
     const result = requestLocationPermission();
     result.then(res => {
@@ -102,22 +93,37 @@ export default function VolunteerMap({
     });
   };
 
-  const [region, setRegion] = React.useState({
-    latitude: 51.5079145,
-    longitude: -0.0899163,
-    latitudeDelta: 0.005,
-    longitudeDelta: 0.005,
-  });
+  let UpdateLoc = (route:any, setRegion:any, region:any)=>{
+    setInterval(() => {
+        Geolocation.getCurrentPosition(
+          position => {
+      
+            setRegion({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              latitudeDelta: 0.005,
+              longitudeDelta: 0.005,
+            })
+            database()
+              .ref(`/delivery/${route.params.username.trim()}/geo`)
+              .set(region);
+          },
+          error => {
+            // See error code charts below.
+            Alert.alert("Error!", error.message);
+          },
+          {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
+        );
+      }, 50000);
+  }
 
-  const [showMap, setShowMap] = React.useState(false);
-  const [items, setItems]: any = React.useState([]);
 
   React.useEffect(() => {
     try{
 
       if(updateLocToggle){
         updateLocToggle = !updateLocToggle;
-        UpdateLoc(route,region);
+        UpdateLoc(route,setRegion,region);
       }
       getLocation(region, setRegion, setShowMap);
       database()
@@ -143,7 +149,8 @@ export default function VolunteerMap({
                         title: {type: 'Donor', name: value.donor},
                         mobile: value.mobile,
                         id: value.id,
-                        color:val.color
+                        color:val.color,
+                        volID:val.id
                       });
                   });
                 }
@@ -152,7 +159,7 @@ export default function VolunteerMap({
                   title: {type: 'NGO', name: val.ngo},
                   mobile: val.mobile,
                   id: val.id,
-                  color:val.color
+                  color:val.color,
                 });
               }
             });
@@ -187,7 +194,8 @@ export default function VolunteerMap({
                         title: {type: 'Donor', name: value.donor},
                         mobile: value.mobile,
                         id: value.id,
-                        color:val.color
+                        color:val.color,
+                        volID:val.id
                       });
                   });
                 }
@@ -315,6 +323,34 @@ export default function VolunteerMap({
                         .set('Completed');
                     }
                   });
+                  database()
+                      .ref(
+                        `/volreq/${route.params.username.trim()}/${items[0].volID}`,
+                      )
+                      .once("value",(snapshot)=>{
+                        let data = snapshot.val();
+                      if(data){     
+                        let pickups = data.pickup;
+                        let newPicklist: any[] = []
+                        pickups.forEach((value:any,index:any)=>{
+                          if(value.id != items[0].id){
+                            newPicklist.push(value)
+                          }
+                        })
+                          database()
+                      .ref(
+                        `/volreq/${route.params.username.trim()}/${items[0].volID}/pickup`,
+                      ).set(newPicklist)
+                      database()
+                      .ref(
+                        `/volreq/${data.ngo.trim()}/${items[0].volID}/pickup`,
+                      ).set(newPicklist)
+                      }
+                      items.shift();
+                      setItems(items);
+                      setShowMap(false);
+                      setShowMap(true);
+                      });
               } else if (items[0].title.type == 'NGO') {
                 database()
                   .ref(
@@ -328,11 +364,12 @@ export default function VolunteerMap({
                     }/status`,
                   )
                   .set('Completed');
+                  
+                    items.shift();
+                    setItems(items);
+                    setShowMap(false);
+                    setShowMap(true);
               }
-              items.shift();
-              setItems(items);
-              setShowMap(false);
-              setShowMap(true);
             }
             catch(err){
               console.log(err)
@@ -364,7 +401,7 @@ export default function VolunteerMap({
                   color: 'black',
                   fontWeight: '700',
                 }}>
-                Donor
+                {items[0].title.type}
               </Text>
               <TouchableOpacity
 

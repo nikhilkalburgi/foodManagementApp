@@ -299,7 +299,7 @@ export default function RequestVolunteer({
                     database()
                       .ref(
                         `/notifications/${route.params.Item.ngo.trim()}/${
-                          route.params.Item.id
+                          route.params.Item.id 
                         }`,
                       )
                       .set({

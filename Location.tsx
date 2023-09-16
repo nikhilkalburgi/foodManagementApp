@@ -79,7 +79,7 @@ const DonLoc = (props: any): JSX.Element => {
           props.pickup.push({
             id: props.item.id,
             donor: props.item.donor,
-            mobile: props.item.mobile,
+            mobile: props.item.donationmobile || "",
             name: props.item.name,
             location: props.item.location,
           });
@@ -238,7 +238,7 @@ export default function Location({
                   database()
                     .ref(
                       `/volreq/${route.params.props.username.trim()}/${
-                        route.params.props.Item.id
+                        route.params.props.Item.id + route.params.props.username.trim()
                       }`,
                     )
                     .set({
@@ -248,12 +248,13 @@ export default function Location({
                       requestdate: Date.now(),
                       drop: region,
                       pickup: pickup,
-                      color: colorCode
+                      color: colorCode,
+                      id : route.params.props.Item.id + route.params.props.username.trim()
                     });
                   database()
                     .ref(
                       `/volreq/${route.params.props.Item.name.trim()}/${
-                        route.params.props.Item.id
+                        route.params.props.Item.id + route.params.props.username.trim()
                       }`,
                     )
                     .set({
@@ -261,20 +262,20 @@ export default function Location({
                       status: 'Requested',
                       ngo: route.params.props.username.trim(),
                       mobile: route.params.props.user.mobile,
-                      defaultlocation: route.params.props.user.location,
                       requestdate: Date.now(),
                       drop: region,
                       pickup: pickup,
-                      color: colorCode
+                      color: colorCode,
+                      id : route.params.props.Item.id + route.params.props.username.trim()
                     });
                   database()
                     .ref(
                       `/notifications/${route.params.props.Item.name.trim()}/${
-                        route.params.props.Item.id
+                        route.params.props.Item.id + route.params.props.username.trim()
                       }`,
                     )
                     .set({
-                      id: route.params.props.Item.id,
+                      id: route.params.props.Item.id + route.params.props.username.trim(),
                       name: route.params.props.username,
                       time: Date.now(),
                       msg: `Request From ${route.params.props.username.trim()}`,

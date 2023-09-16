@@ -9,6 +9,14 @@
       android:roundIcon="@mipmap/ic_launcher_round"
       android:allowBackup="false"
       android:theme="@style/AppTheme">
+
+      <meta-data
+     android:name="com.google.android.geo.API_KEY"
+     android:value="AIzaSyAG8_ANGGVkyoEH_NlY0KbzsY8RpezUC10"/> <!-- Your key goes here. -->
+ 
+   <!-- You will also only need to add this uses-library tag -->
+   <uses-library android:name="org.apache.http.legacy" android:required="false"/>
+
       <activity
         android:name=".MainActivity"
         android:label="@string/app_name"
@@ -19,7 +27,7 @@
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
+         </intent-filter>
       </activity>
     </application>
 </manifest>

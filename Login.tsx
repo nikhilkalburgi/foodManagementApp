@@ -176,6 +176,7 @@ const LoginScreen = ({navigation}: {navigation: any}): JSX.Element => {
               inlineImagePadding={50}
               style={login.Input}
               placeholder=" Password"
+              secureTextEntry={true}
             />
           </LinearGradient>
           {confirmPassword.element}
