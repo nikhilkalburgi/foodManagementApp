@@ -1,7 +1,7 @@
 # foodManagementApp
 React Native App that connects NGOs with Food Suppliers and Volunteers
 
-![ERROR](img1.png)
+![](img.png)
 
 #### Problem Statement - A User friendly platform for food waste management and addressing the reduction of under-nourishment
 
