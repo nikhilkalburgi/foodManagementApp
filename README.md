@@ -1,6 +1,7 @@
 # foodManagementApp
 React Native App that connects NGOs with Food Suppliers and Volunteers
-# Code-with-Google-Maps-2023 - Hack2skill
+
+![ERROR](img1.png)
 
 #### Problem Statement - A User friendly platform for food waste management and addressing the reduction of under-nourishment
 
